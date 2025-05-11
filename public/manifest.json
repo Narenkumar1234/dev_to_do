@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Dev Tasks & Notes",
+  "description": "Take meeting notes and track daily dev tasks from new tab.",
+  "version": "1.0",
+  "permissions": [],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": {
+    "default_title": "Dev Tasks & Notes"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}
