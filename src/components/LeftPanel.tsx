@@ -6,6 +6,7 @@ interface LeftPanelProps {
   onTabClick: (tab: string) => void;
   onRenameTab: (oldName: string, newName: string) => void;
   onNewTab: (name: string) => void;
+  onDeleteTab: (tab: string) => void; 
 }
 
 const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -14,6 +15,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   onTabClick,
   onRenameTab,
   onNewTab,
+  onDeleteTab,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const handleNewTab = () => {
@@ -62,6 +64,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             onClick={() => onTabClick(tab)}
           >
             <span className="truncate">{tab}</span>
+            <div>
             <button
               className="text-sm text-blue-500 hover:underline ml-2"
               onClick={(e) => {
@@ -71,6 +74,18 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             >
               ✎
             </button>
+             <button
+                className="text-sm text-red-500 hover:underline ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(`Delete "${tab}"?`)) {
+                    onDeleteTab(tab);
+                  } 
+        }}
+      >
+        🗑
+      </button>
+      </div>
           </div>
         ))}
       </div>

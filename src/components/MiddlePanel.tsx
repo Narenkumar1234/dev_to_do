@@ -7,7 +7,6 @@ interface MiddlePanelProps {
   addTask: (text: string) => void
   onEditNotes: (taskId: number) => void
   onCompleteTask: (taskId: number) => void
-  showRightPanel: boolean
 }
 
 const MiddlePanel = ({
@@ -15,7 +14,6 @@ const MiddlePanel = ({
   addTask,
   onEditNotes,
   onCompleteTask,
-  showRightPanel
 }: MiddlePanelProps) => {
   const [newTask, setNewTask] = useState("")
 
@@ -27,8 +25,7 @@ const MiddlePanel = ({
   }
 
   return (
-    // <div className={`${showRightPanel ? "w-3/5" : "w-full"} transition-all duration-300`}></div>
-    <div className={`${showRightPanel ? "w-3/5" : "w-full"} transition-all duration-300w-2/5 border-r border-gray-300 p-4 overflow-y-auto`}>
+    <div className={`w-3/5 transition-all duration-300w-2/5 border-r border-gray-300 p-4 overflow-y-auto`}>
       <h2 className="text-lg font-semibold mb-4">Tasks</h2>
 
       <div className="flex mb-4">
