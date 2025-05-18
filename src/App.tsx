@@ -5,63 +5,50 @@ import MiddlePanel from "./components/MiddlePanel"
 import RightPanel from "./components/RightPanel"
 import { Task, TaskMap } from "./types"
 import "./styles.css"
+import {
+  upsertTasksForDate,
+  deleteTabFromStorage,
+  ensureTodayExists
+} from "./utils";
 
-const LOCAL_KEY = "devtab_tasks_by_date"
 
 const App = () => {
   const today = dayjs().format("DD-MMM-YY")
 
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [tasksByDate, setTasksByDate] = useState<TaskMap>({})
   const [selectedDate, setSelectedDate] = useState<string>(today)
-  const [renamedDates, setRenamedDates] = useState<{ [key: string]: string }>({})
+  const [, setRenamedDates] = useState<{ [key: string]: string }>({})
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   
   const tasks = tasksByDate[selectedDate] || []
 
-  useEffect(() => {
-    const data = localStorage.getItem(LOCAL_KEY)
-    if (data) {
-      const parsed: TaskMap = JSON.parse(data)
-      // If today is not present, add it
-      debugger;
-      if (!parsed[today]) {
-        parsed[today] = []
-      }
-      setTasksByDate(parsed)
-      setSelectedDate(today)
-    } else {
-      // No data in storage, initialize with today
-      setTasksByDate({ [today]: [] })
-      setSelectedDate(today)
-    }
-  }, [])
+useEffect(() => {
+  const updated = ensureTodayExists(today);
+  setTasksByDate(updated);
+  setSelectedDate(today);
+  setDataLoaded(true);
+}, []);
 
-  useEffect(() => {
-    const data = localStorage.getItem(LOCAL_KEY)
-    if (data) {
-      const parsedData: TaskMap = JSON.parse(data)
-      return localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...parsedData, [selectedDate]: tasksByDate[selectedDate] }))
-    }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(tasksByDate))
-  }, [tasksByDate])
 
-  const onDeleteTab = (tab: string) => {
-    // delete in localstorage 
-    const data = localStorage.getItem(LOCAL_KEY)
-    if (data) {
-      const parsedData: TaskMap = JSON.parse(data)
-      delete parsedData[tab]
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(parsedData))
-    }
-    setTasksByDate(prev => {
-      const { [tab]: _, ...rest } = prev;
-      return rest;
-    });
-    if (selectedDate === tab) {
-      const remainingTabs = Object.keys(tasksByDate).filter(t => t !== tab);
-      setSelectedDate(remainingTabs[0] || today);
-    }
+useEffect(() => {
+  if (dataLoaded) {
+    upsertTasksForDate(selectedDate, tasksByDate[selectedDate]);
+  }
+}, [tasksByDate, dataLoaded]);
+
+
+const onDeleteTab = (tab: string) => {
+  deleteTabFromStorage(tab);
+  setTasksByDate(prev => {
+    const { [tab]: _, ...rest } = prev;
+    return rest;
+  });
+  if (selectedDate === tab) {
+    const remainingTabs = Object.keys(tasksByDate).filter(t => t !== tab);
+    setSelectedDate(remainingTabs[0] || today);
+  }
 };
 
   const addTask = (text: string) => {
