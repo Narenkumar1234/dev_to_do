@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 interface LeftPanelProps {
   tabs: string[];
@@ -6,7 +6,7 @@ interface LeftPanelProps {
   onTabClick: (tab: string) => void;
   onRenameTab: (oldName: string, newName: string) => void;
   onNewTab: (name: string) => void;
-  onDeleteTab: (tab: string) => void; 
+  onDeleteTab: (tab: string) => void;
 }
 
 const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -18,11 +18,38 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   onDeleteTab,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const handleNewTab = () => {
-    const name = prompt("Enter tab name:");
-    if (name && name.trim() !== "") {
-      onNewTab(name.trim());
+  const [creatingNewTab, setCreatingNewTab] = useState(false);
+  const [newTabName, setNewTabName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (creatingNewTab && inputRef.current) {
+      inputRef.current.focus();
     }
+  }, [creatingNewTab]);
+
+  const filteredTabs = tabs.filter((tab) =>
+    tab.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleCreateNewTab = () => {
+    setCreatingNewTab(true);
+    setNewTabName("");
+  };
+
+  const commitNewTab = () => {
+    const name = newTabName.trim();
+    if (name !== "" && !tabs.includes(name)) {
+      onNewTab(name);
+      setCreatingNewTab(false);
+    } else {
+      cancelNewTab(); // avoid duplicates or blank
+    }
+  };
+
+  const cancelNewTab = () => {
+    setCreatingNewTab(false);
+    setNewTabName("");
   };
 
   const handleRename = (tab: string) => {
@@ -31,10 +58,6 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       onRenameTab(tab, name.trim());
     }
   };
-
-  const filteredTabs = tabs.filter((tab) =>
-    tab.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="w-1/5 bg-gray-100 p-4 border-r h-full flex flex-col">
@@ -47,7 +70,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <button
-          onClick={handleNewTab}
+          onClick={handleCreateNewTab}
           className="mt-2 w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
         >
           + New Note
@@ -55,6 +78,24 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        {creatingNewTab && (
+          <div className="p-2 rounded mb-1 bg-yellow-100 flex items-center">
+            <input
+              ref={inputRef}
+              type="text"
+              value={newTabName}
+              onChange={(e) => setNewTabName(e.target.value)}
+              onBlur={commitNewTab}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitNewTab();
+                if (e.key === "Escape") cancelNewTab();
+              }}
+              className="w-full p-1 rounded border focus:outline-none"
+              placeholder="New note name..."
+            />
+          </div>
+        )}
+
         {filteredTabs.map((tab) => (
           <div
             key={tab}
@@ -65,27 +106,27 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           >
             <span className="truncate">{tab}</span>
             <div>
-            <button
-              className="text-sm text-blue-500 hover:underline ml-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRename(tab);
-              }}
-            >
-              ✎
-            </button>
-             <button
+              <button
+                className="text-sm text-blue-500 hover:underline ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRename(tab);
+                }}
+              >
+                ✎
+              </button>
+              <button
                 className="text-sm text-red-500 hover:underline ml-2"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (window.confirm(`Delete "${tab}"?`)) {
                     onDeleteTab(tab);
-                  } 
-        }}
-      >
-        🗑
-      </button>
-      </div>
+                  }
+                }}
+              >
+                🗑
+              </button>
+            </div>
           </div>
         ))}
       </div>
