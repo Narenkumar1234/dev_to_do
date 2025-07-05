@@ -130,7 +130,7 @@ const onDeleteTab = (tabId: string) => {
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null
 
   return (
-    <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main}`}>
+    <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main} min-w-0`} style={{ minWidth: '768px' }}>
       <LeftPanel
         tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
         activeTabId={selectedTabId}
@@ -149,7 +149,7 @@ const onDeleteTab = (tabId: string) => {
       />
 
       <div 
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-w-0"
         style={{ 
           marginRight: showNotesPanel ? `${rightPanelWidth}px` : '0px',
           transition: 'margin-right 0.3s ease-in-out'

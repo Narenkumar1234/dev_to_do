@@ -92,47 +92,52 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   };
 
   return (
-    <div className={`w-1/5 ${currentTheme.colors.background.panel} ${currentTheme.colors.border.light} border-r h-full flex flex-col`}>
+    <div className={`w-64 md:w-80 lg:w-1/5 flex-shrink-0 ${currentTheme.colors.background.panel} ${currentTheme.colors.border.light} border-r h-full flex flex-col min-w-0`}>
       {/* Header */}
-      <div className={`p-6 pb-4 border-b ${currentTheme.colors.border.light}`}>
+      <div className={`p-4 md:p-6 pb-4 border-b ${currentTheme.colors.border.light}`}>
         <div className="flex items-center gap-3 mb-4">
-          <div className={`w-10 h-10 bg-gradient-to-br ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} rounded-xl flex items-center justify-center shadow-lg`}>
-            <FolderOpen size={20} className="text-white" />
+          <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+            <FolderOpen size={16} className="text-white md:hidden" />
+            <FolderOpen size={20} className="text-white hidden md:block" />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold ${currentTheme.colors.text.primary}`}>Notes</h1>
-              <ThemeSwitcher />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <h1 className={`text-lg md:text-xl font-bold ${currentTheme.colors.text.primary} truncate`}>Notes</h1>
+              <div className="flex-shrink-0">
+                <ThemeSwitcher />
+              </div>
             </div>
-            <p className={`text-sm ${currentTheme.colors.text.muted}`}>{tabs.length} workspace{tabs.length !== 1 ? 's' : ''}</p>
+            <p className={`text-xs md:text-sm ${currentTheme.colors.text.muted} truncate`}>
+              {tabs.length} workspace{tabs.length !== 1 ? 's' : ''}
+            </p>
           </div>
         </div>
         
         {/* Search and New Note button */}
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
+        <div className="flex flex-col gap-2">
+          <div className="relative">
             <Search size={16} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${currentTheme.colors.text.muted}`} />
             <input
               type="text"
               placeholder="Search workspaces..."
-              className={`w-full pl-4 pr-4 py-2.5 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all duration-200`}
+              className={`w-full pl-10 pr-4 py-2.5 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all duration-200`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={handleCreateNewTab}
-            className={`bg-gradient-to-r ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} text-white px-4 py-2.5 rounded-xl hover:opacity-90 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2`}
+            className={`bg-gradient-to-r ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} text-white px-3 md:px-4 py-2.5 rounded-xl hover:opacity-90 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 whitespace-nowrap`}
             title="New Workspace"
           >
             <Plus size={16} />
-            New
+            <span className="hidden md:inline">New</span>
           </button>
         </div>
       </div>
 
       {/* Workspaces List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2">
         {creatingNewTab && (
           <div className={`p-4 rounded-xl bg-gradient-to-r ${currentTheme.colors.secondary.light} border ${currentTheme.colors.border.light} shadow-sm`}>
             <div className="flex items-center gap-2 mb-2">
