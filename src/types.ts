@@ -5,15 +5,15 @@ export interface Task {
   completed: boolean
 }
 
-interface LeftPanelProps {
-  tasksByDate: TaskMap
-  selectedDate: string
-  setSelectedDate: (date: string) => void
-  renamedDates: { [key: string]: string }
-  onRename: (oldKey: string, newLabel: string) => void
-  onCreateNewNote: () => void
+export interface Tab {
+  id: string
+  name: string
 }
 
 export interface TaskMap {
-  [date: string]: Task[]
+  [tabId: string]: Task[]
+}
+
+export interface TabsMap {
+  [tabId: string]: Tab
 }

@@ -37,17 +37,36 @@ const RightPanel = ({ selectedTask, onClose, onSaveNotes, visible }: RightPanelP
     if (visible && quillRef.current) {
       // Focus the editor when panel opens
       quillRef.current.focus()
+      
+      // If this is a new task with just the heading, position cursor at the end of heading
+      if (selectedTask && (!selectedTask.notes || selectedTask.notes.trim() === "")) {
+        setTimeout(() => {
+          const quill = quillRef.current?.getEditor()
+          if (quill) {
+            // Position cursor at the end of the heading
+            const headingLength = selectedTask.text.length
+            quill.setSelection(headingLength, 0)
+          }
+        }, 100)
+      }
     }
-  }, [visible])
+  }, [visible, selectedTask])
 
-    useEffect(() => {
+  useEffect(() => {
     if (selectedTask) {
-      setNotes(selectedTask.notes || "")
+      // If notes are empty, pre-fill with task name as heading
+      if (!selectedTask.notes || selectedTask.notes.trim() === "") {
+        setNotes(`<h1>${selectedTask.text}</h1><p><br></p>`)
+      } else {
+        setNotes(selectedTask.notes)
+      }
     }
   }, [selectedTask])
 
   const handleClose = () => {
-    onSaveNotes(selectedTask.id, notes)
+    if (selectedTask) {
+      onSaveNotes(selectedTask.id, notes)
+    }
     onClose();
   }
   // Always render the panel, but slide it in/out

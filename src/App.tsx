@@ -3,12 +3,17 @@ import dayjs from "dayjs"
 import LeftPanel from "./components/LeftPanel"
 import MiddlePanel from "./components/MiddlePanel"
 import RightPanel from "./components/RightPanel"
-import { Task, TaskMap } from "./types"
+import { Task, TaskMap, Tab, TabsMap } from "./types"
 import "./styles.css"
 import {
-  upsertTasksForDate,
+  upsertTasksForTab,
   deleteTabFromStorage,
-  ensureTodayExists
+  initializeApp,
+  createNewTab,
+  renameTab,
+  saveLastSelectedTab,
+  getTasksFromStorage,
+  getTabsFromStorage
 } from "./utils";
 
 
@@ -17,37 +22,58 @@ const App = () => {
 
   const [dataLoaded, setDataLoaded] = useState(false);
   const [tasksByDate, setTasksByDate] = useState<TaskMap>({})
-  const [selectedDate, setSelectedDate] = useState<string>(today)
+  const [tabs, setTabs] = useState<TabsMap>({})
+  const [selectedTabId, setSelectedTabId] = useState<string>("")
   const [, setRenamedDates] = useState<{ [key: string]: string }>({})
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   
-  const tasks = tasksByDate[selectedDate] || []
+  const tasks = tasksByDate[selectedTabId] || []
 
 useEffect(() => {
-  const updated = ensureTodayExists(today);
-  setTasksByDate(updated);
-  setSelectedDate(today);
+  const { tasks, tabs: tabsData, defaultTabId } = initializeApp(today);
+  setTasksByDate(tasks);
+  setTabs(tabsData);
+  setSelectedTabId(defaultTabId);
   setDataLoaded(true);
 }, []);
 
 
 useEffect(() => {
-  if (dataLoaded) {
-    upsertTasksForDate(selectedDate, tasksByDate[selectedDate]);
+  if (dataLoaded && selectedTabId) {
+    upsertTasksForTab(selectedTabId, tasksByDate[selectedTabId]);
   }
-}, [tasksByDate, dataLoaded]);
+}, [tasksByDate, selectedTabId, dataLoaded]);
+
+// Save the last selected tab when it changes
+useEffect(() => {
+  if (selectedTabId) {
+    saveLastSelectedTab(selectedTabId);
+  }
+}, [selectedTabId]);
 
 
-const onDeleteTab = (tab: string) => {
-  deleteTabFromStorage(tab);
+const onDeleteTab = (tabId: string) => {
+  deleteTabFromStorage(tabId);
   setTasksByDate(prev => {
-    const { [tab]: _, ...rest } = prev;
+    const { [tabId]: _, ...rest } = prev;
     return rest;
   });
-  if (selectedDate === tab) {
-    const remainingTabs = Object.keys(tasksByDate).filter(t => t !== tab);
-    setSelectedDate(remainingTabs[0] || today);
+  setTabs(prev => {
+    const { [tabId]: _, ...rest } = prev;
+    return rest;
+  });
+  if (selectedTabId === tabId) {
+    const remainingTabIds = Object.keys(tasksByDate).filter(id => id !== tabId);
+    if (remainingTabIds.length > 0) {
+      setSelectedTabId(remainingTabIds[0]);
+    } else {
+      // If no tabs remain, create a new default tab
+      const { tasks, tabs: tabsData, defaultTabId } = initializeApp(today);
+      setTasksByDate(tasks);
+      setTabs(tabsData);
+      setSelectedTabId(defaultTabId);
+    }
   }
 };
 
@@ -58,15 +84,22 @@ const onDeleteTab = (tab: string) => {
       notes: "",
       completed: false,
     }
-    const updatedTasks = [...tasks, newTask]
-    setTasksByDate(prev => ({ ...prev, [selectedDate]: updatedTasks }))
+    // Add new task at the beginning of the array
+    const updatedTasks = [newTask, ...tasks]
+    setTasksByDate(prev => ({ ...prev, [selectedTabId]: updatedTasks }))
   }
 
   const completeTask = (taskId: number) => {
-    const updated = tasksByDate[selectedDate].map(task =>
-      task.id === taskId ? { ...task, completed: true } : task
+    const updated = tasksByDate[selectedTabId].map(task =>
+      task.id === taskId ? { ...task, completed: !task.completed } : task
     )
-    setTasksByDate(prev => ({ ...prev, [selectedDate]: updated.filter(t => !t.completed) }))
+    // Keep all tasks, just toggle completed state
+    setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
+  }
+
+  const deleteTask = (taskId: number) => {
+    const updated = tasksByDate[selectedTabId].filter(task => task.id !== taskId)
+    setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
   }
 
   const openNotesPanel = (taskId: number) => {
@@ -80,10 +113,10 @@ const onDeleteTab = (tab: string) => {
   }
 
   const saveNotes = (taskId: number, notes: string) => {
-    const updated = tasksByDate[selectedDate].map(task =>
+    const updated = tasksByDate[selectedTabId].map(task =>
       task.id === taskId ? { ...task, notes } : task
     )
-    setTasksByDate(prev => ({ ...prev, [selectedDate]: updated }))
+    setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
   }
 
   const handleRenameDate = (oldKey: string, newLabel: string) => {
@@ -95,30 +128,18 @@ const onDeleteTab = (tab: string) => {
   return (
     <div className="flex h-screen bg-gray-100">
 <LeftPanel
-  tabs={Object.keys(tasksByDate)} // Convert TaskMap to string[]
-  activeTab={selectedDate}
-  onTabClick={setSelectedDate}
-  onRenameTab={(oldKey, newLabel) => {
-    // Copy existing tasks to new key
-    setTasksByDate(prev => {
-      const { [oldKey]: oldTasks, ...rest } = prev;
-      return { ...rest, [newLabel]: oldTasks };
-    });
-
-    // Update renamedDates
-    handleRenameDate(oldKey, newLabel);
-
-    // Update selected tab if the renamed tab is active
-    if (selectedDate === oldKey) {
-      setSelectedDate(newLabel);
-    }
+  tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
+  activeTabId={selectedTabId}
+  onTabClick={setSelectedTabId}
+  onRenameTab={(tabId: string, newName: string) => {
+    const updatedTabs = renameTab(tabId, newName);
+    setTabs(updatedTabs);
   }}
   onNewTab={(name: string) => {
-    setTasksByDate(prev => {
-      if (prev[name]) return prev; // Avoid overwriting existing tabs
-      return { ...prev, [name]: [] };
-    });
-    setSelectedDate(name); // Auto-select new tab
+    const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name);
+    setTabs(updatedTabs);
+    setTasksByDate(updatedTasks);
+    setSelectedTabId(tabId); // Auto-select new tab
   }}
   onDeleteTab={onDeleteTab}
 />
@@ -127,7 +148,8 @@ const onDeleteTab = (tab: string) => {
         tasks={tasks}
         addTask={addTask}
         onEditNotes={openNotesPanel}
-        onCompleteTask={completeTask} 
+        onCompleteTask={completeTask}
+        onDeleteTask={deleteTask}
         />
 
       <RightPanel
