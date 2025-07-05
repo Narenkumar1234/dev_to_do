@@ -25,6 +25,7 @@ interface SimpleEditorProps {
   content: string
   onChange: (content: string) => void
   onFocus?: () => void
+  onTypingChange?: (isTyping: boolean) => void
   placeholder?: string
 }
 
@@ -32,6 +33,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   content, 
   onChange, 
   onFocus, 
+  onTypingChange,
   placeholder = 'Press \'/\' for commands or just start typing...' 
 }) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false)
@@ -108,12 +110,20 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
       setIsTyping(true)
-      setTimeout(() => setIsTyping(false), 1000)
+      if (onTypingChange) {
+        onTypingChange(true)
+      }
+      setTimeout(() => {
+        setIsTyping(false)
+        if (onTypingChange) {
+          onTypingChange(false)
+        }
+      }, 1000)
     },
     onFocus: handleEditorFocus,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none px-8 py-6 min-h-[500px] pl-10',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] p-6',
       },
       handleKeyDown: (view, event) => {
         // Handle slash commands
@@ -414,74 +424,74 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   }
 
   return (
-    <div className="relative group/editor bg-white rounded-2xl shadow-xl border border-gray-200/80 overflow-hidden">
+    <div className="relative group/editor bg-transparent overflow-hidden">
       {/* Ultra Modern Toolbar */}
-      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 backdrop-blur-sm border-b border-gray-200/60">
-        <div className="px-4 sm:px-6 py-4">
-          {/* Two-row layout: Controls on first row, Status on second row */}
+      <div className="bg-gray-50/50 border-b border-gray-100 mb-4">
+        <div className="px-4 py-3">
+          {/* Two-row layout: Controls on first row */}
           <div className="flex flex-col gap-3">
-            {/* First Row - Toolbar Controls */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+            {/* Toolbar Controls */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* Primary Text Formatting */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
+              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('bold') 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-blue-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Bold (⌘B)"
                 >
-                  <Bold size={16} />
+                  <Bold size={14} />
                 </button>
                 <button
                   onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('italic') 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-blue-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Italic (⌘I)"
                 >
-                  <Italic size={16} />
+                  <Italic size={14} />
                 </button>
                 <button
                   onClick={() => editor.chain().focus().toggleStrike().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('strike') 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-blue-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Strikethrough"
                 >
-                  <Strikethrough size={16} />
+                  <Strikethrough size={14} />
                 </button>
               </div>
 
               {/* Link & Media */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
+              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
                 <button
                   onClick={openLinkDialog}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('link') 
-                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-emerald-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Link (⌘K)"
                 >
-                  <Link size={16} />
+                  <Link size={14} />
                 </button>
               </div>
               
               {/* Heading Controls */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
+              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
                 <button
                   onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                  className={`px-3 py-2 rounded-lg transition-all duration-300 text-sm font-bold ${
+                  className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-bold ${
                     editor.isActive('heading', { level: 1 }) 
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-indigo-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Heading 1"
                 >
@@ -489,10 +499,10 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                 </button>
                 <button
                   onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                  className={`px-3 py-2 rounded-lg transition-all duration-300 text-sm font-semibold ${
+                  className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-semibold ${
                     editor.isActive('heading', { level: 2 }) 
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-indigo-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Heading 2"
                 >
@@ -500,10 +510,10 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                 </button>
                 <button
                   onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                  className={`px-3 py-2 rounded-lg transition-all duration-300 text-sm font-medium ${
+                  className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-medium ${
                     editor.isActive('heading', { level: 3 }) 
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-indigo-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Heading 3"
                 >
@@ -512,44 +522,29 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               </div>
               
               {/* Lists & Blocks */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
+              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
                 <button
                   onClick={() => editor.chain().focus().toggleBulletList().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('bulletList') 
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-orange-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Bullet List"
                 >
-                  <List size={16} />
+                  <List size={14} />
                 </button>
                 <button
                   onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
+                  className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('orderedList') 
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
+                      ? 'bg-orange-500 text-white shadow-sm' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
                   }`}
                   title="Ordered List"
                 >
-                  <ListOrdered size={16} />
+                  <ListOrdered size={14} />
                 </button>
-              </div>
-            </div>
-
-            {/* Second Row - Status & Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? 'text-blue-600' : ''}`}>
-                  <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? 'bg-blue-500 animate-pulse' : 'bg-emerald-400'}`}></div>
-                  <span className="font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
-                </div>
-              </div>
-              <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
-                <span>Press</span>
-                <kbd className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-mono shadow-sm">/</kbd>
-                <span>for commands</span>
               </div>
             </div>
           </div>
@@ -557,18 +552,18 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       </div>
       
       {/* Editor Container */}
-      <div className="relative bg-gradient-to-br from-white to-gray-50/30 min-h-[600px]">
+      <div className="relative bg-transparent min-h-[500px]">
         {/* Editor Content */}
-        <div className="relative">
+        <div className="relative p-0">
           <EditorContent editor={editor} />
           
           {/* Enhanced Empty State */}
           {(!content || content === '<p></p>' || content.trim() === '') && (
-            <div className="absolute top-6 left-12 pointer-events-none">
+            <div className="absolute top-6 left-6 pointer-events-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Wand2 size={20} className="text-gray-400" />
-                  <div className="text-gray-400 text-xl font-light">
+                  <div className="text-gray-400 text-l font-light">
                     {placeholder}
                   </div>
                 </div>
@@ -590,10 +585,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
             </div>
           )}
         </div>
-
-        {/* Subtle decorative elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/50 to-transparent pointer-events-none"></div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
       </div>
 
       {/* Compact Block Menu */}

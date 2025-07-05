@@ -21,6 +21,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
 }) => {
   const [notes, setNotes] = useState("")
   const [isEditing, setIsEditing] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [taskTitle, setTaskTitle] = useState("")
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [currentTaskId, setCurrentTaskId] = useState<number | null>(null)
@@ -177,6 +178,10 @@ const RightPanel: React.FC<RightPanelProps> = ({
     setIsEditing(true)
   }
 
+  const handleTypingChange = (typing: boolean) => {
+    setIsTyping(typing)
+  }
+
   const getCurrentDate = () => {
     return new Date().toLocaleDateString('en-US', {
       weekday: 'long',
@@ -288,27 +293,41 @@ const RightPanel: React.FC<RightPanelProps> = ({
       <div className="h-full overflow-y-auto pb-20">
         <div className="px-6 py-4">
           {/* Status indicators */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? 'bg-green-500' : 'bg-yellow-500'}`} />
-              <span className="text-sm text-gray-600">
-                {selectedTask.completed ? 'Completed' : 'In Progress'}
-              </span>
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <span className="text-sm text-gray-600">
+                  {selectedTask.completed ? 'Completed' : 'In Progress'}
+                </span>
+              </div>
+              <div className="w-px h-4 bg-gray-300" />
+              <div className="flex items-center gap-2">
+                <User size={12} className="text-gray-400" />
+                <span className="text-sm text-gray-600">You</span>
+              </div>
             </div>
-            <div className="w-px h-4 bg-gray-300" />
-            <div className="flex items-center gap-2">
-              <User size={12} className="text-gray-400" />
-              <span className="text-sm text-gray-600">You</span>
+            <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? 'text-blue-600' : ''}`}>
+                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? 'bg-blue-500 animate-pulse' : 'bg-emerald-400'}`}></div>
+                <span className="text-xs font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
+                <span>Press</span>
+                <kbd className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs font-mono shadow-sm">/</kbd>
+                <span>for commands</span>
+              </div>
             </div>
           </div>
 
           {/* Rich text editor */}
-          <div className="bg-white rounded-lg">
+          <div className="bg-transparent -mx-6">
             <SimpleEditor
               key={selectedTask.id} // Force re-mount when task changes
               content={notes}
               onChange={handleNotesChange}
               onFocus={handleEditorFocus}
+              onTypingChange={handleTypingChange}
               placeholder="Start writing your notes..."
             />
           </div>
@@ -316,11 +335,11 @@ const RightPanel: React.FC<RightPanelProps> = ({
       </div>
 
       {/* Floating action hint */}
-      {!isEditing && (
+      {!isEditing && !isTyping && (
         <div className="absolute bottom-6 left-6 right-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-700">
-              💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className="bg-blue-100 px-1 rounded">Cmd+B</kbd> for bold, <kbd className="bg-blue-100 px-1 rounded">Cmd+I</kbd> for italic, and more!
+              💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className="bg-blue-100 px-1 rounded">Cmd+B</kbd> for bold, <kbd className="bg-blue-100 px-1 rounded">Cmd+I</kbd> for italic, and <kbd className="bg-blue-100 px-1 rounded">/</kbd> for commands!
             </p>
           </div>
         </div>
