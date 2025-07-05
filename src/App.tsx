@@ -27,6 +27,11 @@ const AppContent = () => {
   const [selectedTabId, setSelectedTabId] = useState<string>("")
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
+  const [rightPanelWidth, setRightPanelWidth] = useState(() => {
+    // Load saved width from localStorage or use default
+    const saved = localStorage.getItem('rightPanelWidth')
+    return saved ? parseInt(saved, 10) : 640
+  })
   
   const tasks = tasksByDate[selectedTabId] || []
 
@@ -143,19 +148,28 @@ const onDeleteTab = (tabId: string) => {
         onDeleteTab={onDeleteTab}
       />
 
-      <MiddlePanel
-        tasks={tasks}
-        addTask={addTask}
-        onEditNotes={openNotesPanel}
-        onCompleteTask={completeTask}
-        onDeleteTask={deleteTask}
-      />
+      <div 
+        className="flex-1 flex flex-col"
+        style={{ 
+          marginRight: showNotesPanel ? `${rightPanelWidth}px` : '0px',
+          transition: 'margin-right 0.3s ease-in-out'
+        }}
+      >
+        <MiddlePanel
+          tasks={tasks}
+          addTask={addTask}
+          onEditNotes={openNotesPanel}
+          onCompleteTask={completeTask}
+          onDeleteTask={deleteTask}
+        />
+      </div>
 
       <RightPanel
         selectedTask={selectedTask}
         onClose={closeNotesPanel}
         onSaveNotes={saveNotes}
         visible={showNotesPanel}
+        onWidthChange={setRightPanelWidth}
       />
     </div>
   )

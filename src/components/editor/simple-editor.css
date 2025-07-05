@@ -12,13 +12,13 @@
   position: relative;
 }
 
-/* Enhanced Headings */
+/* Enhanced Headings with consistent spacing */
 .ProseMirror h1 {
   font-size: 2.5rem;
   font-weight: 700;
   line-height: 1.2;
   color: #111827;
-  margin: 2rem 0 1rem 0;
+  margin: 1.5rem 0 0.75rem 0;
   letter-spacing: -0.025em;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -30,8 +30,8 @@
   font-size: 2rem;
   font-weight: 600;
   line-height: 1.3;
-  color: #1f2937;
-  margin: 1.75rem 0 0.875rem 0;
+  color: #111827;
+  margin: 1.25rem 0 0.5rem 0;
   letter-spacing: -0.025em;
 }
 
@@ -39,8 +39,8 @@
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.4;
-  color: #374151;
-  margin: 1.5rem 0 0.75rem 0;
+  color: #111827;
+  margin: 1rem 0 0.5rem 0;
   letter-spacing: -0.025em;
 }
 
@@ -48,30 +48,30 @@
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.4;
-  color: #374151;
-  margin: 1.25rem 0 0.625rem 0;
+  color: #111827;
+  margin: 1rem 0 0.5rem 0;
 }
 
 .ProseMirror h5 {
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.4;
-  color: #374151;
-  margin: 1rem 0 0.5rem 0;
+  color: #111827;
+  margin: 0.75rem 0 0.5rem 0;
 }
 
 .ProseMirror h6 {
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
-  color: #374151;
-  margin: 1rem 0 0.5rem 0;
+  color: #111827;
+  margin: 0.75rem 0 0.5rem 0;
 }
 
-/* Enhanced Paragraphs */
+/* Enhanced Paragraphs with consistent spacing */
 .ProseMirror p {
-  margin: 0.75rem 0;
-  line-height: 1.7;
+  margin: 0.5rem 0;
+  line-height: 1.65;
   color: #111827 !important;
   font-size: 16px;
   font-weight: 400;
@@ -85,6 +85,11 @@
   margin-bottom: 0;
 }
 
+/* Consistent spacing between consecutive paragraphs */
+.ProseMirror p + p {
+  margin-top: 0.75rem;
+}
+
 /* Ensure all text content is dark enough */
 .ProseMirror {
   color: #111827 !important;
@@ -94,16 +99,16 @@
   color: inherit !important;
 }
 
-/* Enhanced Lists */
+/* Enhanced Lists with consistent spacing */
 .ProseMirror ul {
-  margin: 1rem 0;
+  margin: 0.75rem 0;
   padding-left: 1.5rem;
 }
 
 .ProseMirror ul li {
-  margin: 0.5rem 0;
-  line-height: 1.6;
-  color: #374151;
+  margin: 0.25rem 0;
+  line-height: 1.65;
+  color: #111827;
   position: relative;
 }
 
@@ -113,14 +118,14 @@
 }
 
 .ProseMirror ol {
-  margin: 1rem 0;
+  margin: 0.75rem 0;
   padding-left: 1.5rem;
 }
 
 .ProseMirror ol li {
-  margin: 0.5rem 0;
-  line-height: 1.6;
-  color: #374151;
+  margin: 0.25rem 0;
+  line-height: 1.65;
+  color: #111827;
   position: relative;
 }
 
@@ -129,9 +134,9 @@
   font-weight: 600;
 }
 
-/* Enhanced Blockquotes */
+/* Enhanced Blockquotes with consistent spacing */
 .ProseMirror blockquote {
-  margin: 1.5rem 0;
+  margin: 1rem 0;
   padding: 1rem 1.5rem;
   border-left: 4px solid;
   border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
@@ -162,13 +167,13 @@
   z-index: 1;
 }
 
-/* Enhanced Code Blocks */
+/* Enhanced Code Blocks with consistent spacing */
 .ProseMirror pre {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
-  margin: 1.5rem 0;
+  margin: 1rem 0;
   overflow-x: auto;
   font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
   font-size: 14px;
@@ -232,7 +237,7 @@
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
-/* Enhanced Text Formatting */
+/* Enhanced Text Formatting with consistent colors */
 .ProseMirror strong {
   font-weight: 700;
   color: #111827;
@@ -240,12 +245,13 @@
 
 .ProseMirror em {
   font-style: italic;
-  color: #374151;
+  color: #111827;
 }
 
 .ProseMirror s {
   text-decoration: line-through;
   color: #6b7280;
+  opacity: 0.8;
 }
 
 /* Enhanced Placeholder */
@@ -313,6 +319,95 @@
 .ProseMirror > h5 + *,
 .ProseMirror > h6 + * {
   margin-top: 0.5rem;
+}
+
+/* Additional spacing and typography fixes */
+
+/* Consistent spacing between different elements */
+.ProseMirror h1 + p,
+.ProseMirror h2 + p,
+.ProseMirror h3 + p,
+.ProseMirror h4 + p,
+.ProseMirror h5 + p,
+.ProseMirror h6 + p {
+  margin-top: 0.5rem;
+}
+
+/* Consistent spacing before headings when they follow other elements */
+.ProseMirror p + h1,
+.ProseMirror p + h2,
+.ProseMirror p + h3,
+.ProseMirror p + h4,
+.ProseMirror p + h5,
+.ProseMirror p + h6,
+.ProseMirror ul + h1,
+.ProseMirror ul + h2,
+.ProseMirror ul + h3,
+.ProseMirror ul + h4,
+.ProseMirror ul + h5,
+.ProseMirror ul + h6,
+.ProseMirror ol + h1,
+.ProseMirror ol + h2,
+.ProseMirror ol + h3,
+.ProseMirror ol + h4,
+.ProseMirror ol + h5,
+.ProseMirror ol + h6 {
+  margin-top: 1.5rem;
+}
+
+/* Better spacing for lists after paragraphs */
+.ProseMirror p + ul,
+.ProseMirror p + ol {
+  margin-top: 0.5rem;
+}
+
+/* Better spacing for paragraphs after lists */
+.ProseMirror ul + p,
+.ProseMirror ol + p {
+  margin-top: 0.75rem;
+}
+
+/* Consistent spacing for blockquotes */
+.ProseMirror p + blockquote,
+.ProseMirror ul + blockquote,
+.ProseMirror ol + blockquote {
+  margin-top: 1rem;
+}
+
+.ProseMirror blockquote + p,
+.ProseMirror blockquote + ul,
+.ProseMirror blockquote + ol {
+  margin-top: 1rem;
+}
+
+/* Consistent spacing for code blocks */
+.ProseMirror p + pre,
+.ProseMirror ul + pre,
+.ProseMirror ol + pre {
+  margin-top: 1rem;
+}
+
+.ProseMirror pre + p,
+.ProseMirror pre + ul,
+.ProseMirror pre + ol {
+  margin-top: 1rem;
+}
+
+/* Better line height for better readability */
+.ProseMirror {
+  line-height: 1.65;
+}
+
+/* Ensure consistent text color throughout */
+.ProseMirror p,
+.ProseMirror li,
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  color: #111827 !important;
 }
 
 /* Enhanced Typography */

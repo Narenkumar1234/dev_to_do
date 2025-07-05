@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react"
-import { X, FileText, Calendar, Clock, User, Keyboard } from "lucide-react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
+import { X, FileText, Calendar, Clock, User, Keyboard, GripVertical } from "lucide-react"
 import { Task } from "../types"
 import SimpleEditor from "./editor/SimpleEditor"
 import KeyboardShortcuts from "./editor/KeyboardShortcuts"
@@ -9,20 +9,80 @@ interface RightPanelProps {
   onClose: () => void
   onSaveNotes: (taskId: number, notes: string) => void
   visible: boolean
+  onWidthChange?: (width: number) => void
 }
 
 const RightPanel: React.FC<RightPanelProps> = ({ 
   selectedTask, 
   onClose, 
   onSaveNotes, 
-  visible 
+  visible,
+  onWidthChange 
 }) => {
   const [notes, setNotes] = useState("")
   const [isEditing, setIsEditing] = useState(false)
   const [taskTitle, setTaskTitle] = useState("")
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [currentTaskId, setCurrentTaskId] = useState<number | null>(null)
+  const [panelWidth, setPanelWidth] = useState(() => {
+    // Load saved width from localStorage or use default
+    const saved = localStorage.getItem('rightPanelWidth')
+    return saved ? parseInt(saved, 10) : 640
+  })
+  const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+  const resizeHandleRef = useRef<HTMLDivElement>(null)
+
+  // Constants for resize constraints
+  const MIN_WIDTH = 320 // Minimum width in pixels
+  const MAX_WIDTH = 800 // Maximum width in pixels
+
+  // Handle resize functionality
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return
+    
+    const newWidth = window.innerWidth - e.clientX
+    const constrainedWidth = Math.min(Math.max(newWidth, MIN_WIDTH), MAX_WIDTH)
+    setPanelWidth(constrainedWidth)
+  }, [isResizing])
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+  }, [])
+
+  // Save width to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('rightPanelWidth', panelWidth.toString())
+  }, [panelWidth])
+
+  // Notify parent about width changes
+  useEffect(() => {
+    if (onWidthChange && visible) {
+      onWidthChange(panelWidth)
+    }
+  }, [panelWidth, visible, onWidthChange])
+
+  // Set up resize event listeners
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp])
 
   useEffect(() => {
     if (!visible) return
@@ -136,16 +196,48 @@ const RightPanel: React.FC<RightPanelProps> = ({
     <div
       ref={panelRef}
       className={`
-        fixed top-0 right-0 h-full w-2/5 bg-white shadow-2xl overflow-hidden z-50
+        fixed top-0 right-0 h-full bg-white shadow-2xl overflow-hidden z-50
         transform transition-all duration-300 ease-in-out
         ${visible ? "translate-x-0" : "translate-x-full"}
         border-l border-gray-200
       `}
       style={{ 
+        width: `${panelWidth}px`,
         willChange: "transform",
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
+      {/* Resize Handle */}
+      <div
+        ref={resizeHandleRef}
+        className={`
+          absolute left-0 top-0 h-full w-1 cursor-col-resize z-10
+          transition-all duration-200 group
+          ${isResizing ? 'w-2 bg-blue-500' : 'bg-transparent hover:bg-blue-300'}
+        `}
+        onMouseDown={handleMouseDown}
+        title={isResizing ? `Width: ${panelWidth}px` : "Drag to resize panel"}
+      >
+        {/* Resize indicator */}
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="bg-blue-500 text-white p-1 rounded-full shadow-lg">
+            <GripVertical size={12} />
+          </div>
+        </div>
+        
+        {/* Hover area for easier grabbing */}
+        <div className="absolute -left-2 top-0 w-4 h-full" />
+      </div>
+
+      {/* Resize overlay during resizing */}
+      {isResizing && (
+        <div className="fixed inset-0 bg-black bg-opacity-10 z-40">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-3 py-1 rounded-lg shadow-lg">
+            Width: {panelWidth}px
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 bg-white border-b border-gray-100 z-10">
         <div className="flex items-center justify-between px-6 py-4">
