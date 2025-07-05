@@ -194,7 +194,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               return true
             case 'k':
               event.preventDefault()
-              setShowLinkDialog(true)
+              openLinkDialog()
               return true
           }
         }
@@ -266,17 +266,36 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     setShowBlockMenu(false)
   }
 
+  const openLinkDialog = () => {
+    if (editor) {
+      // Get selected text if any
+      const { from, to } = editor.state.selection
+      const selectedText = editor.state.doc.textBetween(from, to, '')
+      
+      // Pre-populate with selected text
+      setLinkText(selectedText)
+      setLinkUrl('')
+      setShowLinkDialog(true)
+    }
+  }
+
   const insertLink = () => {
     if (linkUrl && editor) {
       try {
+        // Ensure URL has proper protocol
+        let formattedUrl = linkUrl.trim()
+        if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://') && !formattedUrl.startsWith('mailto:')) {
+          formattedUrl = `https://${formattedUrl}`
+        }
+
         const { from, to } = editor.state.selection
         if (from === to) {
           // No selection, insert link with provided text or URL as text
           const displayText = linkText || linkUrl
-          editor.chain().focus().insertContent(`<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
+          editor.chain().focus().insertContent(`<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
         } else {
           // Has selection, apply link to selected text
-          editor.chain().focus().setLink({ href: linkUrl }).run()
+          editor.chain().focus().setLink({ href: formattedUrl }).run()
         }
         // Clear the form and close dialog
         setLinkUrl('')
@@ -284,9 +303,13 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
         setShowLinkDialog(false)
       } catch (error) {
         console.error('Error inserting link:', error)
-        // Fallback: try simple insertion
+        // Fallback: try simple insertion with formatted URL
+        let formattedUrl = linkUrl.trim()
+        if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://') && !formattedUrl.startsWith('mailto:')) {
+          formattedUrl = `https://${formattedUrl}`
+        }
         const displayText = linkText || linkUrl
-        editor.chain().focus().insertContent(`<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
+        editor.chain().focus().insertContent(`<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
         setLinkUrl('')
         setLinkText('')
         setShowLinkDialog(false)
@@ -423,7 +446,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               {/* Link & Media */}
               <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
                 <button
-                  onClick={() => setShowLinkDialog(true)}
+                  onClick={openLinkDialog}
                   className={`p-2.5 rounded-lg transition-all duration-300 ${
                     editor.isActive('link') 
                       ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg scale-105' 

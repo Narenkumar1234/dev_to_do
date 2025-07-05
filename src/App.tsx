@@ -152,7 +152,7 @@ const onDeleteTab = (tabId: string) => {
         className="flex-1 flex flex-col min-w-0"
         style={{ 
           marginRight: showNotesPanel ? `${rightPanelWidth}px` : '0px',
-          transition: 'margin-right 0.3s ease-in-out'
+          transition: 'margin-right 0.05s ease-out'
         }}
       >
         <MiddlePanel

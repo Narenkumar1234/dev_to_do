@@ -48,9 +48,12 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return
     
-    const newWidth = window.innerWidth - e.clientX
-    const constrainedWidth = Math.min(Math.max(newWidth, MIN_WIDTH), MAX_WIDTH)
-    setPanelWidth(constrainedWidth)
+    // Use requestAnimationFrame for smooth resizing
+    requestAnimationFrame(() => {
+      const newWidth = window.innerWidth - e.clientX
+      const constrainedWidth = Math.min(Math.max(newWidth, MIN_WIDTH), MAX_WIDTH)
+      setPanelWidth(constrainedWidth)
+    })
   }, [isResizing])
 
   const handleMouseUp = useCallback(() => {
@@ -197,13 +200,13 @@ const RightPanel: React.FC<RightPanelProps> = ({
       ref={panelRef}
       className={`
         fixed top-0 right-0 h-full bg-white shadow-2xl overflow-hidden z-50
-        transform transition-all duration-300 ease-in-out
+        transform transition-transform duration-75 ease-out
         ${visible ? "translate-x-0" : "translate-x-full"}
         border-l border-gray-200
       `}
       style={{ 
         width: `${panelWidth}px`,
-        willChange: "transform",
+        willChange: "transform, width",
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
@@ -212,8 +215,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
         ref={resizeHandleRef}
         className={`
           absolute left-0 top-0 h-full w-1 cursor-col-resize z-10
-          transition-all duration-200 group
-          ${isResizing ? 'w-2 bg-blue-500' : 'bg-transparent hover:bg-blue-300'}
+          ${isResizing ? 'w-2 bg-blue-500 transition-none' : 'bg-transparent hover:bg-blue-300 transition-all duration-100'}
         `}
         onMouseDown={handleMouseDown}
         title={isResizing ? `Width: ${panelWidth}px` : "Drag to resize panel"}

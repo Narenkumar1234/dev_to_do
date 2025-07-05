@@ -116,7 +116,7 @@
 .ProseMirror ul li {
   margin: 0.25rem 0;
   line-height: 1.65;
-  color: #111827;
+  color: #111827 !important;
   position: relative;
   list-style-type: disc;
   display: list-item;
@@ -136,7 +136,7 @@
 .ProseMirror ol li {
   margin: 0.25rem 0;
   line-height: 1.65;
-  color: #111827;
+  color: #111827 !important;
   position: relative;
   list-style-type: decimal;
   display: list-item;
