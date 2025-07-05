@@ -35,9 +35,23 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
 }) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false)
   const [blockMenuPosition, setBlockMenuPosition] = useState({ x: 0, y: 0 })
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState(0)
   const [linkUrl, setLinkUrl] = useState('')
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const blockMenuRef = useRef<HTMLDivElement>(null)
+
+  // Block menu options
+  const blockOptions = [
+    { type: 'paragraph', icon: Type, title: 'Text', desc: 'Just start writing with plain text' },
+    { type: 'heading1', icon: Hash, title: 'Heading 1', desc: 'Big section heading' },
+    { type: 'heading2', icon: Hash, title: 'Heading 2', desc: 'Medium section heading' },
+    { type: 'heading3', icon: Hash, title: 'Heading 3', desc: 'Small section heading' },
+    { type: 'bulletList', icon: List, title: 'Bullet List', desc: 'Create a simple bulleted list' },
+    { type: 'orderedList', icon: ListOrdered, title: 'Numbered List', desc: 'Create a list with numbering' },
+    { type: 'blockquote', icon: Quote, title: 'Quote', desc: 'Capture a quote' },
+    { type: 'codeBlock', icon: Code, title: 'Code Block', desc: 'Capture a code snippet' },
+  ]
 
   // Handle editor focus to ensure proper cursor positioning
   const handleEditorFocus = () => {
@@ -50,6 +64,22 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
         editor.chain().focus().setTextSelection(0).run()
       }, 50)
     }
+  }
+
+  // Scroll selected item into view in block menu
+  const scrollSelectedIntoView = (index: number) => {
+    setTimeout(() => {
+      const menuContainer = blockMenuRef.current?.querySelector('.block-menu-items')
+      const selectedButton = menuContainer?.children[index] as HTMLElement
+      
+      if (selectedButton && menuContainer) {
+        selectedButton.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        })
+      }
+    }, 0)
   }
 
   const editor = useEditor({
@@ -85,10 +115,49 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   y: coords.bottom + 10 
                 })
                 setShowBlockMenu(true)
+                setSelectedBlockIndex(0) // Reset selection
               } catch (error) {
                 console.error('Error positioning block menu:', error)
               }
             }, 100)
+          }
+        }
+
+        // Handle arrow keys when block menu is open
+        if (showBlockMenu) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            const newIndex = (selectedBlockIndex + 1) % blockOptions.length
+            setSelectedBlockIndex(newIndex)
+            scrollSelectedIntoView(newIndex)
+            return true
+          }
+          
+          if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            const newIndex = selectedBlockIndex === 0 ? blockOptions.length - 1 : selectedBlockIndex - 1
+            setSelectedBlockIndex(newIndex)
+            scrollSelectedIntoView(newIndex)
+            return true
+          }
+          
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            insertBlock(blockOptions[selectedBlockIndex].type)
+            return true
+          }
+          
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            setShowBlockMenu(false)
+            return true
+          }
+
+          // Close block menu when user types any character (except navigation keys)
+          if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+            setShowBlockMenu(false)
+            // Let the character be typed normally
+            return false
           }
         }
         
@@ -317,17 +386,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                 >
                   <Strikethrough size={16} />
                 </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleCode().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
-                    editor.isActive('code') 
-                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
-                  }`}
-                  title="Code (⌘E)"
-                >
-                  <Code size={16} />
-                </button>
               </div>
 
               {/* Link & Media */}
@@ -406,17 +464,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                 >
                   <ListOrdered size={16} />
                 </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                  className={`p-2.5 rounded-lg transition-all duration-300 ${
-                    editor.isActive('blockquote') 
-                      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg scale-105' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-105'
-                  }`}
-                  title="Quote"
-                >
-                  <Quote size={16} />
-                </button>
               </div>
             </div>
 
@@ -440,39 +487,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       
       {/* Editor Container */}
       <div className="relative bg-gradient-to-br from-white to-gray-50/30 min-h-[600px]">
-        {/* Floating Plus Button */}
-        <div 
-          className="absolute left-2 top-20 z-20 group/plus" 
-          style={{ 
-            pointerEvents: 'auto'
-          }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-              try {
-                // Use a fixed position relative to the plus button instead of cursor position
-                const rect = e.currentTarget.getBoundingClientRect()
-                setBlockMenuPosition({ 
-                  x: rect.left + rect.width + 10, 
-                  y: rect.top 
-                })
-                setShowBlockMenu(true)
-              } catch (error) {
-                console.error('Error in plus button:', error)
-                // Fallback positioning
-                setBlockMenuPosition({ x: 100, y: 100 })
-                setShowBlockMenu(true)
-              }
-            }}
-            className="w-8 h-8 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 opacity-80 hover:opacity-100"
-            title="Add block"
-          >
-            <Plus size={14} />
-          </button>
-        </div>
-        
         {/* Editor Content */}
         <div className="relative">
           <EditorContent editor={editor} />
@@ -489,8 +503,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-300">
                   <div className="flex items-center gap-2">
-                    <kbd className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-mono shadow-sm">Tab</kbd>
-                    <span>for AI assistance</span>
+                    <kbd className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-mono shadow-sm">``` space</kbd>
+                    <span>for code </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <kbd className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-mono shadow-sm">⌘ K</kbd>
@@ -511,59 +525,55 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
       </div>
 
-      {/* Ultra Modern Block Menu */}
+      {/* Compact Block Menu */}
       {showBlockMenu && createPortal(
         <div 
-          className="fixed bg-white/95 backdrop-blur-lg border border-gray-200/80 rounded-2xl shadow-2xl p-4 w-96 z-[100] block-menu-portal"
+          ref={blockMenuRef}
+          className="fixed bg-white/95 backdrop-blur-lg border border-gray-200/80 rounded-lg shadow-xl p-2 w-64 z-[100] block-menu-portal"
           style={{
             left: `${Math.max(10, blockMenuPosition.x)}px`,
             top: `${Math.max(10, blockMenuPosition.y)}px`,
             maxWidth: '90vw',
-            maxHeight: '80vh'
+            maxHeight: '60vh'
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <Plus size={16} className="text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">Add a block</h3>
+          <div className="mb-2">
+            <div className="flex items-center justify-between px-2 py-1">
+              <span className="text-xs font-medium text-gray-600">Add a block</span>
               <button
                 onClick={() => setShowBlockMenu(false)}
-                className="ml-auto text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 p-1"
               >
-                <X size={16} />
+                <X size={12} />
               </button>
             </div>
-            <p className="text-sm text-gray-500">Choose what you'd like to add to your document</p>
           </div>
           
-          <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto">
-            {[
-              { type: 'paragraph', icon: Type, title: 'Text', desc: 'Just start writing with plain text', color: 'from-gray-100 to-gray-200', hoverColor: 'from-gray-200 to-gray-300' },
-              { type: 'heading1', icon: Hash, title: 'Heading 1', desc: 'Big section heading', color: 'from-indigo-100 to-blue-100', hoverColor: 'from-indigo-200 to-blue-200' },
-              { type: 'heading2', icon: Hash, title: 'Heading 2', desc: 'Medium section heading', color: 'from-indigo-100 to-blue-100', hoverColor: 'from-indigo-200 to-blue-200' },
-              { type: 'heading3', icon: Hash, title: 'Heading 3', desc: 'Small section heading', color: 'from-indigo-100 to-blue-100', hoverColor: 'from-indigo-200 to-blue-200' },
-              { type: 'bulletList', icon: List, title: 'Bullet List', desc: 'Create a simple bulleted list', color: 'from-orange-100 to-red-100', hoverColor: 'from-orange-200 to-red-200' },
-              { type: 'orderedList', icon: ListOrdered, title: 'Numbered List', desc: 'Create a list with numbering', color: 'from-orange-100 to-red-100', hoverColor: 'from-orange-200 to-red-200' },
-              { type: 'blockquote', icon: Quote, title: 'Quote', desc: 'Capture a quote', color: 'from-yellow-100 to-orange-100', hoverColor: 'from-yellow-200 to-orange-200' },
-              { type: 'codeBlock', icon: Code, title: 'Code Block', desc: 'Capture a code snippet', color: 'from-purple-100 to-pink-100', hoverColor: 'from-purple-200 to-pink-200' },
-            ].map((block) => (
+          <div className="block-menu-items space-y-1 max-h-64 overflow-y-auto">
+            {blockOptions.map((block, index) => (
               <button
                 key={block.type}
                 onClick={() => insertBlock(block.type)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl text-sm text-left transition-all duration-300 group hover:shadow-md"
+                className={`w-full flex items-center gap-2 p-2 rounded-md text-xs text-left transition-all duration-200 hover:bg-blue-50 ${
+                  index === selectedBlockIndex ? 'bg-blue-100 border border-blue-200' : 'hover:bg-gray-50'
+                }`}
               >
-                <div className={`w-12 h-12 bg-gradient-to-br ${block.color} group-hover:${block.hoverColor} rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm`}>
-                  <block.icon size={20} className="text-gray-600 group-hover:scale-110 transition-transform duration-300" />
+                <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
+                  <block.icon size={12} className="text-gray-600" />
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-800">{block.title}</div>
-                  <div className="text-xs text-gray-500 leading-relaxed">{block.desc}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-800 truncate">{block.title}</div>
+                  <div className="text-gray-500 truncate text-xs">{block.desc}</div>
                 </div>
               </button>
             ))}
+          </div>
+          
+          <div className="border-t border-gray-100 mt-2 pt-2">
+            <div className="text-xs text-gray-400 px-2">
+              Use ↑↓ to navigate, Enter to select, Esc to close
+            </div>
           </div>
         </div>,
         document.body

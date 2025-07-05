@@ -20,10 +20,6 @@
   color: #111827;
   margin: 1.5rem 0 0.75rem 0;
   letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .ProseMirror h2 {
@@ -90,12 +86,23 @@
   margin-top: 0.75rem;
 }
 
-/* Ensure all text content is dark enough */
+/* Ensure all text content is dark enough, except code blocks */
 .ProseMirror {
   color: #111827 !important;
 }
 
-.ProseMirror * {
+.ProseMirror p,
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6,
+.ProseMirror li,
+.ProseMirror blockquote,
+.ProseMirror strong,
+.ProseMirror em,
+.ProseMirror a {
   color: inherit !important;
 }
 
@@ -103,6 +110,7 @@
 .ProseMirror ul {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
+  list-style-type: disc;
 }
 
 .ProseMirror ul li {
@@ -110,6 +118,8 @@
   line-height: 1.65;
   color: #111827;
   position: relative;
+  list-style-type: disc;
+  display: list-item;
 }
 
 .ProseMirror ul li::marker {
@@ -120,6 +130,7 @@
 .ProseMirror ol {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
+  list-style-type: decimal;
 }
 
 .ProseMirror ol li {
@@ -127,11 +138,34 @@
   line-height: 1.65;
   color: #111827;
   position: relative;
+  list-style-type: decimal;
+  display: list-item;
 }
 
 .ProseMirror ol li::marker {
   color: #6366f1;
   font-weight: 600;
+}
+
+/* Nested lists */
+.ProseMirror ul ul {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.ProseMirror ol ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman;
 }
 
 /* Enhanced Blockquotes with consistent spacing */
@@ -169,8 +203,8 @@
 
 /* Enhanced Code Blocks with consistent spacing */
 .ProseMirror pre {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  color: #e2e8f0;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+  color: #e2e8f0 !important;
   border-radius: 12px;
   padding: 1.5rem;
   margin: 1rem 0;
@@ -195,12 +229,20 @@
 }
 
 .ProseMirror pre code {
-  background: none;
+  background: none !important;
   padding: 0;
   font-size: inherit;
-  color: inherit;
+  color: #e2e8f0 !important;
   border-radius: 0;
   border: none;
+}
+
+/* Force light text color for all elements within code blocks with highest specificity */
+.ProseMirror pre,
+.ProseMirror pre *,
+.ProseMirror pre code,
+.ProseMirror pre code * {
+  color: #e2e8f0 !important;
 }
 
 /* Enhanced Inline Code */
