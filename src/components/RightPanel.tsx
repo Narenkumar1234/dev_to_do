@@ -142,9 +142,11 @@ const RightPanel: React.FC<RightPanelProps> = ({
       setCurrentTaskId(selectedTask.id)
       setTaskTitle(selectedTask.text)
       
-      // Initialize with existing notes or empty content
+      // Initialize with existing notes or create new note with task title
       if (!selectedTask.notes || selectedTask.notes.trim() === "") {
-        setNotes("")
+        // Create new note starting with task name as H1 title
+        const initialContent = `<h1>${selectedTask.text}</h1><p></p>`
+        setNotes(initialContent)
       } else {
         setNotes(selectedTask.notes)
       }

@@ -60,11 +60,19 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     if (onFocus) {
       onFocus()
     }
-    // Ensure cursor is at the beginning when editor is empty
-    if (editor && (!content || content === '<p></p>' || content.trim() === '')) {
-      setTimeout(() => {
-        editor.chain().focus().setTextSelection(0).run()
-      }, 50)
+    
+    if (editor) {
+      // If editor is empty, position cursor at the beginning
+      if (!content || content === '<p></p>' || content.trim() === '') {
+        setTimeout(() => {
+          editor.chain().focus().setTextSelection(0).run()
+        }, 50)
+      } else {
+        // If editor has content, position cursor at the end
+        setTimeout(() => {
+          editor.commands.focus('end')
+        }, 50)
+      }
     }
   }
 
@@ -212,6 +220,14 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content)
+      
+      // Position cursor at the end if there's content
+      if (content && content.trim() !== '' && content !== '<p></p>') {
+        setTimeout(() => {
+          // Move cursor to the end of the document
+          editor.commands.focus('end')
+        }, 100)
+      }
     }
   }, [content, editor])
 
