@@ -66,7 +66,7 @@
 
 /* Enhanced Paragraphs with consistent spacing */
 .ProseMirror p {
-  margin: 0.5rem 0;
+  margin: 0.125rem 0;
   line-height: 1.65;
   color: #111827 !important;
   font-size: 16px;
@@ -83,7 +83,7 @@
 
 /* Consistent spacing between consecutive paragraphs */
 .ProseMirror p + p {
-  margin-top: 0.75rem;
+  margin-top: 0.125rem;
 }
 
 /* Ensure all text content is dark enough, except code blocks */
@@ -340,13 +340,33 @@
 
 /* Enhanced Selection */
 .ProseMirror ::selection {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  color: #1d4ed8;
+  background: #3b82f6;
+  color: #ffffff;
+  text-shadow: none;
 }
 
 .ProseMirror ::-moz-selection {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  color: #1d4ed8;
+  background: #3b82f6;
+  color: #ffffff;
+  text-shadow: none;
+}
+
+/* ProseMirror selection styling */
+.ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Text selection in editor */
+.ProseMirror .ProseMirror-selectednode {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Selection in contenteditable */
+.ProseMirror-focused .ProseMirror-selectednode {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
 }
 
 /* Enhanced Spacing */

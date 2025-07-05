@@ -17,6 +17,7 @@
     "license": "MIT",
     "dependencies": {
         "@tailwindcss/postcss": "^4.1.6",
+        "@tiptap/extension-link": "^2.24.2",
         "@tiptap/react": "^2.24.2",
         "@tiptap/starter-kit": "^2.24.2",
         "dayjs": "^1.11.13",

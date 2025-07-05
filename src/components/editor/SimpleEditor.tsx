@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import LinkExtension from '@tiptap/extension-link'
 import { 
   Bold, 
   Italic, 
@@ -37,6 +38,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   const [blockMenuPosition, setBlockMenuPosition] = useState({ x: 0, y: 0 })
   const [selectedBlockIndex, setSelectedBlockIndex] = useState(0)
   const [linkUrl, setLinkUrl] = useState('')
+  const [linkText, setLinkText] = useState('')
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const blockMenuRef = useRef<HTMLDivElement>(null)
@@ -83,7 +85,17 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   }
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      LinkExtension.configure({
+        openOnClick: true,
+        HTMLAttributes: {
+          class: 'prose-link',
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        },
+      }),
+    ],
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
@@ -256,9 +268,29 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
 
   const insertLink = () => {
     if (linkUrl && editor) {
-      editor.chain().focus().setLink({ href: linkUrl }).run()
-      setLinkUrl('')
-      setShowLinkDialog(false)
+      try {
+        const { from, to } = editor.state.selection
+        if (from === to) {
+          // No selection, insert link with provided text or URL as text
+          const displayText = linkText || linkUrl
+          editor.chain().focus().insertContent(`<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
+        } else {
+          // Has selection, apply link to selected text
+          editor.chain().focus().setLink({ href: linkUrl }).run()
+        }
+        // Clear the form and close dialog
+        setLinkUrl('')
+        setLinkText('')
+        setShowLinkDialog(false)
+      } catch (error) {
+        console.error('Error inserting link:', error)
+        // Fallback: try simple insertion
+        const displayText = linkText || linkUrl
+        editor.chain().focus().insertContent(`<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${displayText}</a>`).run()
+        setLinkUrl('')
+        setLinkText('')
+        setShowLinkDialog(false)
+      }
     }
   }
 
@@ -591,6 +623,17 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
             </div>
             <div className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Link Text</label>
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="Enter display text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                  autoFocus
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">URL</label>
                 <input
                   type="url"
@@ -598,18 +641,22 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="https://example.com"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
-                  autoFocus
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={insertLink}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 py-3 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+                  disabled={!linkUrl}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
                 >
                   Add Link
                 </button>
                 <button
-                  onClick={() => setShowLinkDialog(false)}
+                  onClick={() => {
+                    setShowLinkDialog(false)
+                    setLinkUrl('')
+                    setLinkText('')
+                  }}
                   className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl transition-all duration-200 font-medium"
                 >
                   Cancel
