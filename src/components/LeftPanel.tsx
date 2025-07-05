@@ -3,6 +3,7 @@ import { Search, Plus, Edit2, Trash2, FolderOpen, Calendar } from "lucide-react"
 import { Tab } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import ThemeSwitcher from "./ThemeSwitcher";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 interface LeftPanelProps {
   tabs: Tab[];
@@ -27,6 +28,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   const [newTabName, setNewTabName] = useState("");
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTabName, setEditingTabName] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [tabToDelete, setTabToDelete] = useState<Tab | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
@@ -215,9 +218,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
                   className={`p-1.5 rounded-lg hover:bg-red-100 ${currentTheme.colors.text.muted} hover:text-red-600 transition-colors duration-200`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm(`Delete "${tab.name}"?`)) {
-                      onDeleteTab(tab.id);
-                    }
+                    setTabToDelete(tab);
+                    setDeleteModalOpen(true);
                   }}
                   title="Delete workspace"
                 >
@@ -236,6 +238,24 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setTabToDelete(null);
+        }}
+        onConfirm={() => {
+          if (tabToDelete) {
+            onDeleteTab(tabToDelete.id);
+          }
+        }}
+        title="Delete Workspace"
+        message="Are you sure you want to delete this workspace? All tasks and notes within it will be permanently removed."
+        itemName={tabToDelete?.name || ""}
+        itemType="workspace"
+      />
     </div>
   );
 };

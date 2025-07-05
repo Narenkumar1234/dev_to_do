@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Plus, CheckCircle2, Circle, Edit3, Trash2, StickyNote, Calendar, Clock } from "lucide-react"
 import { Task } from "../types"
 import { useTheme } from "../contexts/ThemeContext"
-import React from "react"
+import DeleteConfirmModal from "./DeleteConfirmModal"
 
 interface MiddlePanelProps {
   tasks: Task[]
@@ -21,12 +21,43 @@ const MiddlePanel = ({
 }: MiddlePanelProps) => {
   const { currentTheme } = useTheme()
   const [newTask, setNewTask] = useState("")
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    taskId: number | null
+    taskText: string
+  }>({
+    isOpen: false,
+    taskId: null,
+    taskText: ""
+  })
 
   const handleAdd = () => {
     if (newTask.trim() !== "") {
       addTask(newTask.trim())
       setNewTask("")
     }
+  }
+
+  const handleDeleteTask = (taskId: number, taskText: string) => {
+    setDeleteModal({
+      isOpen: true,
+      taskId,
+      taskText
+    })
+  }
+
+  const confirmDeleteTask = () => {
+    if (deleteModal.taskId !== null) {
+      onDeleteTask(deleteModal.taskId)
+    }
+  }
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      taskId: null,
+      taskText: ""
+    })
   }
 
   const getCurrentDate = () => {
@@ -170,9 +201,7 @@ const MiddlePanel = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`Delete task "${task.text}"?`)) {
-                            onDeleteTask(task.id);
-                          }
+                          handleDeleteTask(task.id, task.text);
                         }}
                         className={`p-2 rounded-lg hover:bg-red-50 ${currentTheme.colors.text.muted} hover:text-red-500 transition-colors duration-200`}
                         title="Delete task"
@@ -229,9 +258,7 @@ const MiddlePanel = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`Delete task "${task.text}"?`)) {
-                            onDeleteTask(task.id);
-                          }
+                          handleDeleteTask(task.id, task.text);
                         }}
                         className={`p-2 rounded-lg hover:bg-red-50 ${currentTheme.colors.text.muted} hover:text-red-500 transition-colors duration-200`}
                         title="Delete task"
@@ -266,6 +293,17 @@ const MiddlePanel = ({
           </div>
         )}
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDeleteTask}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        itemName={deleteModal.taskText}
+        itemType="task"
+      />
     </div>
   )
 }
