@@ -145,6 +145,12 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     },
   })
 
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content)
+    }
+  }, [content, editor])
+
   const insertBlock = (type: string) => {
     if (!editor) return
     

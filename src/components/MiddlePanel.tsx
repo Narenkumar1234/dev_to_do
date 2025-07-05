@@ -113,7 +113,7 @@ const MiddlePanel = ({
               onChange={e => setNewTask(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleAdd()}
               placeholder="Add a new task..."
-              className={`w-full pl-10 pr-4 py-3 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all duration-200`}
+              className={`w-full pl-4 pr-4 py-3 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all duration-200`}
             />
           </div>
           <button

@@ -21,6 +21,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [isEditing, setIsEditing] = useState(false)
   const [taskTitle, setTaskTitle] = useState("")
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [currentTaskId, setCurrentTaskId] = useState<number | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -63,30 +64,42 @@ const RightPanel: React.FC<RightPanelProps> = ({
   }, [visible, selectedTask, notes])
 
   useEffect(() => {
-    if (selectedTask) {
+    if (selectedTask && selectedTask.id !== currentTaskId) {
+      // Save current notes before switching if we have a currentTaskId
+      if (currentTaskId !== null) {
+        onSaveNotes(currentTaskId, notes)
+      }
+      
+      // Set new task
+      setCurrentTaskId(selectedTask.id)
       setTaskTitle(selectedTask.text)
+      
       // Initialize with existing notes or empty content
       if (!selectedTask.notes || selectedTask.notes.trim() === "") {
         setNotes("")
       } else {
         setNotes(selectedTask.notes)
       }
+      
+      // Reset editing state when switching tasks
+      setIsEditing(false)
     }
-  }, [selectedTask])
+  }, [selectedTask?.id, currentTaskId, notes, onSaveNotes])
 
   const handleClose = () => {
-    if (selectedTask) {
-      onSaveNotes(selectedTask.id, notes)
+    if (currentTaskId) {
+      onSaveNotes(currentTaskId, notes)
     }
+    setCurrentTaskId(null)
     onClose()
     setIsEditing(false)
   }
 
   const handleNotesChange = (newNotes: string) => {
     setNotes(newNotes)
-    // Auto-save notes as user types
-    if (selectedTask) {
-      onSaveNotes(selectedTask.id, newNotes)
+    // Only auto-save if we have a valid currentTaskId and it matches the selected task
+    if (currentTaskId && selectedTask && currentTaskId === selectedTask.id) {
+      onSaveNotes(currentTaskId, newNotes)
     }
   }
 
@@ -191,6 +204,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
           {/* Rich text editor */}
           <div className="bg-white rounded-lg">
             <SimpleEditor
+              key={selectedTask.id} // Force re-mount when task changes
               content={notes}
               onChange={handleNotesChange}
               onFocus={handleEditorFocus}

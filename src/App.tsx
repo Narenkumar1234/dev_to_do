@@ -105,7 +105,11 @@ const onDeleteTab = (tabId: string) => {
 
   const openNotesPanel = (taskId: number) => {
     setSelectedTaskId(taskId)
-    setShowNotesPanel(true)
+    // Only set showNotesPanel to true if it's not already open
+    // This prevents the close/reopen animation when switching tasks
+    if (!showNotesPanel) {
+      setShowNotesPanel(true)
+    }
   }
 
   const closeNotesPanel = () => {
@@ -114,9 +118,12 @@ const onDeleteTab = (tabId: string) => {
   }
 
   const saveNotes = (taskId: number, notes: string) => {
-    const updated = tasksByDate[selectedTabId].map(task =>
-      task.id === taskId ? { ...task, notes } : task
-    )
+    const updated = tasksByDate[selectedTabId].map(task => {
+      if (task.id === taskId) {
+        return { ...task, notes }
+      }
+      return task
+    })
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
   }
 
@@ -124,7 +131,7 @@ const onDeleteTab = (tabId: string) => {
     setRenamedDates(prev => ({ ...prev, [oldKey]: newLabel }))
   }
 
-  const selectedTask = tasks.find(t => t.id === selectedTaskId) || null
+  const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null
 
   return (
     <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main}`}>
