@@ -5,7 +5,6 @@ import StarterKit from '@tiptap/starter-kit'
 import { 
   Bold, 
   Italic, 
-  Underline as UnderlineIcon, 
   Code, 
   Plus,
   Type,
@@ -13,16 +12,10 @@ import {
   List,
   ListOrdered,
   Quote,
-  Image,
   Link,
   Strikethrough,
   Sparkles,
   Wand2,
-  Palette,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  MoreHorizontal,
   X
 } from 'lucide-react'
 import './simple-editor.css'
@@ -45,11 +38,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   const [linkUrl, setLinkUrl] = useState('')
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
-
-  // Debug log for block menu state
-  useEffect(() => {
-    console.log('Block menu state:', showBlockMenu, blockMenuPosition)
-  }, [showBlockMenu, blockMenuPosition])
 
   // Handle editor focus to ensure proper cursor positioning
   const handleEditorFocus = () => {
@@ -78,8 +66,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none px-8 py-6 min-h-[500px] pl-10',
       },
       handleKeyDown: (view, event) => {
-        console.log('Key pressed:', event.key) // Debug log
-        
         // Handle slash commands
         if (event.key === '/') {
           const { state } = view
@@ -89,14 +75,11 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
           // Check if we're at the start of a line or after whitespace
           const isAtStartOfLine = $from.parent.textContent.trim() === ''
           
-          console.log('Slash detected, isAtStartOfLine:', isAtStartOfLine) // Debug log
-          
           if (isAtStartOfLine) {
             // Allow the slash to be typed first
             setTimeout(() => {
               try {
                 const coords = view.coordsAtPos(selection.anchor)
-                console.log('Slash command triggered at:', coords) // Debug log
                 setBlockMenuPosition({ 
                   x: coords.left, 
                   y: coords.bottom + 10 
@@ -455,7 +438,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       
       {/* Editor Container */}
       <div className="relative bg-gradient-to-br from-white to-gray-50/30 min-h-[600px]">
-        {/* Floating Plus Button - Always show for debugging */}
+        {/* Floating Plus Button */}
         <div 
           className="absolute left-2 top-20 z-20 group/plus" 
           style={{ 
@@ -466,11 +449,9 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
-              console.log('Plus button clicked') // Debug log
               try {
                 // Use a fixed position relative to the plus button instead of cursor position
                 const rect = e.currentTarget.getBoundingClientRect()
-                console.log('Button rect:', rect) // Debug log
                 setBlockMenuPosition({ 
                   x: rect.left + rect.width + 10, 
                   y: rect.top 
