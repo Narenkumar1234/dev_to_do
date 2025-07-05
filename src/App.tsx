@@ -4,6 +4,7 @@ import LeftPanel from "./components/LeftPanel"
 import MiddlePanel from "./components/MiddlePanel"
 import RightPanel from "./components/RightPanel"
 import { Task, TaskMap, Tab, TabsMap } from "./types"
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext"
 import "./styles.css"
 import {
   upsertTasksForTab,
@@ -16,8 +17,8 @@ import {
   getTabsFromStorage
 } from "./utils";
 
-
-const App = () => {
+const AppContent = () => {
+  const { currentTheme } = useTheme()
   const today = dayjs().format("DD-MMM-YY")
 
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -126,23 +127,23 @@ const onDeleteTab = (tabId: string) => {
   const selectedTask = tasks.find(t => t.id === selectedTaskId) || null
 
   return (
-    <div className="flex h-screen bg-gray-100">
-<LeftPanel
-  tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
-  activeTabId={selectedTabId}
-  onTabClick={setSelectedTabId}
-  onRenameTab={(tabId: string, newName: string) => {
-    const updatedTabs = renameTab(tabId, newName);
-    setTabs(updatedTabs);
-  }}
-  onNewTab={(name: string) => {
-    const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name);
-    setTabs(updatedTabs);
-    setTasksByDate(updatedTasks);
-    setSelectedTabId(tabId); // Auto-select new tab
-  }}
-  onDeleteTab={onDeleteTab}
-/>
+    <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main}`}>
+      <LeftPanel
+        tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
+        activeTabId={selectedTabId}
+        onTabClick={setSelectedTabId}
+        onRenameTab={(tabId: string, newName: string) => {
+          const updatedTabs = renameTab(tabId, newName);
+          setTabs(updatedTabs);
+        }}
+        onNewTab={(name: string) => {
+          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name);
+          setTabs(updatedTabs);
+          setTasksByDate(updatedTasks);
+          setSelectedTabId(tabId); // Auto-select new tab
+        }}
+        onDeleteTab={onDeleteTab}
+      />
 
       <MiddlePanel
         tasks={tasks}
@@ -150,7 +151,7 @@ const onDeleteTab = (tabId: string) => {
         onEditNotes={openNotesPanel}
         onCompleteTask={completeTask}
         onDeleteTask={deleteTask}
-        />
+      />
 
       <RightPanel
         selectedTask={selectedTask}
@@ -159,6 +160,14 @@ const onDeleteTab = (tabId: string) => {
         visible={showNotesPanel}
       />
     </div>
+  )
+}
+
+const App = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   )
 }
 
