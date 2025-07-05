@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Palette, Check, ChevronDown } from 'lucide-react'
+import { Palette, Check } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 
 const ThemeSwitcher: React.FC = () => {
@@ -15,18 +15,16 @@ const ThemeSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+        className={`p-2 rounded-lg transition-all duration-200 ${
           currentTheme.colors.background.card
         } ${
           currentTheme.colors.border.light
         } border ${
           currentTheme.colors.text.secondary
-        } hover:shadow-md`}
-        title="Change theme"
+        } hover:shadow-md hover:${currentTheme.colors.border.medium}`}
+        title={`Current theme: ${currentTheme.displayName}`}
       >
-        <Palette size={16} />
-        <span className="text-sm font-medium">{currentTheme.displayName}</span>
-        <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <Palette size={18} />
       </button>
 
       {isOpen && (

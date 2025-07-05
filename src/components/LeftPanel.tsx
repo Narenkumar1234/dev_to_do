@@ -96,15 +96,13 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           <div className={`w-10 h-10 bg-gradient-to-br ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} rounded-xl flex items-center justify-center shadow-lg`}>
             <FolderOpen size={20} className="text-white" />
           </div>
-          <div>
-            <h1 className={`text-xl font-bold ${currentTheme.colors.text.primary}`}>Notes</h1>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h1 className={`text-xl font-bold ${currentTheme.colors.text.primary}`}>Notes</h1>
+              <ThemeSwitcher />
+            </div>
             <p className={`text-sm ${currentTheme.colors.text.muted}`}>{tabs.length} workspace{tabs.length !== 1 ? 's' : ''}</p>
           </div>
-        </div>
-        
-        {/* Theme Switcher */}
-        <div className="mb-4">
-          <ThemeSwitcher />
         </div>
         
         {/* Search and New Note button */}
