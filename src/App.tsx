@@ -25,7 +25,6 @@ const AppContent = () => {
   const [tasksByDate, setTasksByDate] = useState<TaskMap>({})
   const [tabs, setTabs] = useState<TabsMap>({})
   const [selectedTabId, setSelectedTabId] = useState<string>("")
-  const [, setRenamedDates] = useState<{ [key: string]: string }>({})
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   
@@ -105,11 +104,7 @@ const onDeleteTab = (tabId: string) => {
 
   const openNotesPanel = (taskId: number) => {
     setSelectedTaskId(taskId)
-    // Only set showNotesPanel to true if it's not already open
-    // This prevents the close/reopen animation when switching tasks
-    if (!showNotesPanel) {
-      setShowNotesPanel(true)
-    }
+    setShowNotesPanel(true)
   }
 
   const closeNotesPanel = () => {
@@ -125,10 +120,6 @@ const onDeleteTab = (tabId: string) => {
       return task
     })
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
-  }
-
-  const handleRenameDate = (oldKey: string, newLabel: string) => {
-    setRenamedDates(prev => ({ ...prev, [oldKey]: newLabel }))
   }
 
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null

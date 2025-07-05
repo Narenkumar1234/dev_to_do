@@ -119,7 +119,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           </div>
           <button
             onClick={handleCreateNewTab}
-            className={`bg-gradient-to-r ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} text-white px-4 py-2.5 rounded-xl hover:from-blue-600 hover:to-purple-700 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2`}
+            className={`bg-gradient-to-r ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} text-white px-4 py-2.5 rounded-xl hover:opacity-90 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2`}
             title="New Workspace"
           >
             <Plus size={16} />
@@ -202,7 +202,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
               
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <button
-                  className={`p-1.5 rounded-lg hover:${currentTheme.colors.primary.light} ${currentTheme.colors.text.muted} hover:${currentTheme.colors.primary.text} transition-colors duration-200`}
+                  className={`p-1.5 rounded-lg ${currentTheme.colors.background.hover} ${currentTheme.colors.text.muted} hover:${currentTheme.colors.primary.text} transition-colors duration-200`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRename(tab);

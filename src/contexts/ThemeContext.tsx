@@ -65,7 +65,7 @@ export const themes: Record<string, Theme> = {
         main: 'bg-gradient-to-br from-slate-50 via-white to-gray-50/30',
         panel: 'bg-gradient-to-br from-slate-50 to-white',
         card: 'bg-white',
-        hover: 'hover:bg-white'
+        hover: 'hover:bg-blue-50'
       },
       text: {
         primary: 'text-gray-900',
@@ -106,7 +106,7 @@ export const themes: Record<string, Theme> = {
         main: 'bg-gradient-to-br from-orange-50 via-white to-red-50/30',
         panel: 'bg-gradient-to-br from-orange-50 to-white',
         card: 'bg-white',
-        hover: 'hover:bg-white'
+        hover: 'hover:bg-orange-50'
       },
       text: {
         primary: 'text-gray-900',
@@ -147,7 +147,7 @@ export const themes: Record<string, Theme> = {
         main: 'bg-gradient-to-br from-green-50 via-white to-emerald-50/30',
         panel: 'bg-gradient-to-br from-green-50 to-white',
         card: 'bg-white',
-        hover: 'hover:bg-white'
+        hover: 'hover:bg-green-50'
       },
       text: {
         primary: 'text-gray-900',
@@ -188,7 +188,7 @@ export const themes: Record<string, Theme> = {
         main: 'bg-gradient-to-br from-purple-50 via-white to-indigo-50/30',
         panel: 'bg-gradient-to-br from-purple-50 to-white',
         card: 'bg-white',
-        hover: 'hover:bg-white'
+        hover: 'hover:bg-purple-50'
       },
       text: {
         primary: 'text-gray-900',
@@ -229,7 +229,7 @@ export const themes: Record<string, Theme> = {
         main: 'bg-gradient-to-br from-rose-50 via-white to-pink-50/30',
         panel: 'bg-gradient-to-br from-rose-50 to-white',
         card: 'bg-white',
-        hover: 'hover:bg-white'
+        hover: 'hover:bg-rose-50'
       },
       text: {
         primary: 'text-gray-900',

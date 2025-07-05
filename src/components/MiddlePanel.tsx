@@ -118,7 +118,7 @@ const MiddlePanel = ({
           </div>
           <button
             onClick={handleAdd}
-            className={`bg-gradient-to-r ${currentTheme.colors.secondary.from} ${currentTheme.colors.secondary.to} text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2`}
+            className={`bg-gradient-to-r ${currentTheme.colors.secondary.from} ${currentTheme.colors.secondary.to} text-white px-6 py-3 rounded-xl hover:opacity-90 font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2`}
           >
             <Plus size={16} />
             Add Task
@@ -137,8 +137,9 @@ const MiddlePanel = ({
             <div className="space-y-3">
               {pendingTasks.map(task => (
                 <div
+                  id={"task"+task.id}
                   key={task.id}
-                  className={`group ${currentTheme.colors.background.card} rounded-xl border ${currentTheme.colors.border.light} p-4 hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
+                  className={`group ${currentTheme.colors.background.card} rounded-xl border ${currentTheme.colors.border.light} p-4 ${currentTheme.colors.background.hover} hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
                   onClick={() => onEditNotes(task.id)}
                 >
                   <div className="flex items-start gap-3">
@@ -147,7 +148,7 @@ const MiddlePanel = ({
                         e.stopPropagation();
                         onCompleteTask(task.id);
                       }}
-                      className={`mt-1 p-1 rounded-full hover:${currentTheme.colors.secondary.light} transition-colors duration-200`}
+                      className={`mt-1 p-1 rounded-full ${currentTheme.colors.background.hover} transition-colors duration-200`}
                       title="Mark as complete"
                     >
                       <Circle size={20} className={`${currentTheme.colors.text.muted} hover:${currentTheme.colors.secondary.text} transition-colors duration-200`} />
@@ -195,8 +196,9 @@ const MiddlePanel = ({
             <div className="space-y-3">
               {completedTasks.map(task => (
                 <div
+                  id={"task"+task.id}
                   key={task.id}
-                  className={`group ${currentTheme.colors.secondary.light} rounded-xl border ${currentTheme.colors.border.light} p-4 hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
+                  className={`group ${currentTheme.colors.secondary.light} rounded-xl border ${currentTheme.colors.border.light} p-4 ${currentTheme.colors.background.hover} hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
                   onClick={() => onEditNotes(task.id)}
                 >
                   <div className="flex items-start gap-3">
@@ -205,7 +207,7 @@ const MiddlePanel = ({
                         e.stopPropagation();
                         onCompleteTask(task.id);
                       }}
-                      className={`mt-1 p-1 rounded-full hover:${currentTheme.colors.secondary.light} transition-colors duration-200`}
+                      className={`mt-1 p-1 rounded-full ${currentTheme.colors.background.hover} transition-colors duration-200`}
                       title="Mark as incomplete"
                     >
                       <CheckCircle2 size={20} className={`${currentTheme.colors.secondary.text} hover:${currentTheme.colors.secondary.text} transition-colors duration-200`} />
@@ -256,7 +258,7 @@ const MiddlePanel = ({
                 const input = document.querySelector('input[placeholder="Add a new task..."]') as HTMLInputElement;
                 if (input) input.focus();
               }}
-              className={`bg-gradient-to-r ${currentTheme.colors.secondary.from} ${currentTheme.colors.secondary.to} text-white px-6 py-2 rounded-lg hover:from-emerald-600 hover:to-teal-700 font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mx-auto`}
+              className={`bg-gradient-to-r ${currentTheme.colors.secondary.from} ${currentTheme.colors.secondary.to} text-white px-6 py-2 rounded-lg hover:opacity-90 font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mx-auto`}
             >
               <Plus size={16} />
               Add Your First Task

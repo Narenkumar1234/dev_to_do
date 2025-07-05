@@ -496,7 +496,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
           
           {/* Enhanced Empty State */}
           {(!content || content === '<p></p>' || content.trim() === '') && (
-            <div className="absolute top-12 left-12 pointer-events-none">
+            <div className="absolute top-6 left-12 pointer-events-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Wand2 size={20} className="text-gray-400" />

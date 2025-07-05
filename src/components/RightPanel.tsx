@@ -34,6 +34,11 @@ const RightPanel: React.FC<RightPanelProps> = ({
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node
       
+      // Check if the user clicked on a task item (prevent closing when switching tasks)
+      if (target instanceof HTMLElement && target.closest('[id^="task"]')) {
+        return // Don't close if clicking on a task item
+      }
+      
       // Check if the click is inside the right panel
       if (panelRef.current && !panelRef.current.contains(target)) {
         // Check if the click is on the block menu (which is portaled to document.body)
