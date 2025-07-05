@@ -123,7 +123,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     onFocus: handleEditorFocus,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] p-6',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[500px] px-6',
       },
       handleKeyDown: (view, event) => {
         // Handle slash commands
@@ -559,7 +559,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
           
           {/* Enhanced Empty State */}
           {(!content || content === '<p></p>' || content.trim() === '') && (
-            <div className="absolute top-6 left-6 pointer-events-none">
+            <div className="absolute top-0 left-6 pointer-events-none">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Wand2 size={20} className="text-gray-400" />
