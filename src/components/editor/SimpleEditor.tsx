@@ -277,9 +277,11 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     <div className="relative group/editor bg-white rounded-2xl shadow-xl border border-gray-200/80 overflow-hidden">
       {/* Ultra Modern Toolbar */}
       <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 backdrop-blur-sm border-b border-gray-200/60">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="px-4 sm:px-6 py-4">
+          {/* Two-row layout: Controls on first row, Status on second row */}
+          <div className="flex flex-col gap-3">
+            {/* First Row - Toolbar Controls */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
               {/* Primary Text Formatting */}
               <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-gray-200/60 p-1">
                 <button
@@ -418,12 +420,12 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               </div>
             </div>
 
-            {/* Status & Actions */}
-            <div className="flex items-center gap-4">
+            {/* Second Row - Status & Actions */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? 'text-blue-600' : ''}`}>
                   <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? 'bg-blue-500 animate-pulse' : 'bg-emerald-400'}`}></div>
-                  <span className="font-medium">{isTyping ? 'Typing...' : 'Saved'}</span>
+                  <span className="font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
                 </div>
               </div>
               <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
