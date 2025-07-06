@@ -247,47 +247,6 @@ export const themes: Record<string, Theme> = {
         error: 'text-red-600'
       }
     }
-  },
-  midnight: {
-    name: 'midnight',
-    displayName: 'Midnight Dark',
-    colors: {
-      primary: {
-        from: 'from-slate-600',
-        to: 'to-gray-800',
-        text: 'text-slate-300',
-        light: 'bg-slate-800',
-        dark: 'bg-slate-900'
-      },
-      secondary: {
-        from: 'from-gray-600',
-        to: 'to-slate-800',
-        text: 'text-gray-300',
-        light: 'bg-gray-800',
-        dark: 'bg-gray-900'
-      },
-      background: {
-        main: 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800',
-        panel: 'bg-gradient-to-br from-slate-800 to-gray-900',
-        card: 'bg-slate-800',
-        hover: 'hover:bg-slate-700'
-      },
-      text: {
-        primary: 'text-white',
-        secondary: 'text-gray-300',
-        muted: 'text-gray-400'
-      },
-      border: {
-        light: 'border-slate-700/60',
-        medium: 'border-slate-600',
-        dark: 'border-slate-500'
-      },
-      status: {
-        success: 'text-emerald-400',
-        warning: 'text-yellow-400',
-        error: 'text-red-400'
-      }
-    }
   }
 }
 
