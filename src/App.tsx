@@ -36,11 +36,6 @@ const AppContent = () => {
   const [selectedTabId, setSelectedTabId] = useState<string>("")
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
-  const [rightPanelWidth, setRightPanelWidth] = useState(() => {
-    // Load saved width from localStorage or use default
-    const saved = localStorage.getItem('rightPanelWidth')
-    return saved ? parseInt(saved, 10) : 640
-  })
   const [dataService, setDataService] = useState<FirebaseDataService | null>(null)
   const firebaseSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
@@ -252,13 +247,7 @@ const onDeleteTab = (tabId: string) => {
         onDeleteTab={onDeleteTab}
       />
 
-      <div 
-        className="flex-1 flex flex-col min-w-0"
-        style={{ 
-          marginRight: showNotesPanel ? `${rightPanelWidth}px` : '0px',
-          transition: 'margin-right 0.05s ease-out'
-        }}
-      >
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header with User Profile or Sign In */}
         <div 
           className="flex items-center justify-between p-4 z-auto border-b"
@@ -290,13 +279,15 @@ const onDeleteTab = (tabId: string) => {
         />
       </div>
 
-      <RightPanel
-        selectedTask={selectedTask}
-        onClose={closeNotesPanel}
-        onSaveNotes={saveNotes}
-        visible={showNotesPanel}
-        onWidthChange={setRightPanelWidth}
-      />
+      {showNotesPanel && (
+        <RightPanel
+          selectedTask={selectedTask}
+          onClose={closeNotesPanel}
+          onSaveNotes={saveNotes}
+          visible={showNotesPanel}
+          onWidthChange={() => {}} // No longer needed for layout
+        />
+      )}
     </div>
   )
 }

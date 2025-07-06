@@ -29,6 +29,8 @@ interface SimpleEditorProps {
   onTypingChange?: (isTyping: boolean) => void
   placeholder?: string
   autoFocus?: boolean
+  showToolbar?: boolean
+  onEditorReady?: (editor: any) => void
 }
 
 const SimpleEditor: React.FC<SimpleEditorProps> = ({ 
@@ -37,7 +39,9 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   onFocus, 
   onTypingChange,
   placeholder = 'Press \'/\' for commands or just start typing...', 
-  autoFocus = false 
+  autoFocus = false,
+  showToolbar = true,
+  onEditorReady
 }) => {
   const { currentTheme } = useTheme()
   const [showBlockMenu, setShowBlockMenu] = useState(false)
@@ -206,10 +210,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               event.preventDefault()
               editor?.chain().focus().toggleItalic().run()
               return true
-            case 'u':
-              event.preventDefault()
-              editor?.chain().focus().toggleUnderline?.().run()
-              return true
             case 'e':
               event.preventDefault()
               editor?.chain().focus().toggleCode().run()
@@ -244,6 +244,13 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       }
     }
   }, [content, editor])
+
+  // Call onEditorReady when editor is ready
+  useEffect(() => {
+    if (editor && onEditorReady) {
+      onEditorReady(editor)
+    }
+  }, [editor, onEditorReady])
 
   const insertBlock = (type: string) => {
     if (!editor) return
@@ -417,8 +424,9 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   return (
     <div className="relative group/editor bg-transparent overflow-hidden">
       {/* Ultra Modern Toolbar */}
-      <div className={`${currentTheme.colors.background.hover} border-b ${currentTheme.colors.border.light} mb-4`}>
-        <div className="px-4 py-3">
+      {showToolbar && (
+        <div className={`${currentTheme.colors.background.hover} border-b ${currentTheme.colors.border.light} mb-4`}>
+          <div className="px-4 py-3">
           {/* Two-row layout: Controls on first row */}
           <div className="flex flex-col gap-3">
             {/* Toolbar Controls */}
@@ -541,6 +549,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
           </div>
         </div>
       </div>
+      )}
       
       {/* Editor Container */}
       <div className="relative bg-transparent min-h-[500px]">

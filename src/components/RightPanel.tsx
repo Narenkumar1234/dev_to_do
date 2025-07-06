@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react"
 import { X, FileText, Calendar, Clock, User, Keyboard, GripVertical } from "lucide-react"
 import { Task } from "../types"
 import SimpleEditor from "./editor/SimpleEditor"
+import EditorToolbar from "./editor/EditorToolbar"
 import KeyboardShortcuts from "./editor/KeyboardShortcuts"
 import { useTheme } from "../contexts/ThemeContext"
 
@@ -27,6 +28,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [taskTitle, setTaskTitle] = useState("")
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [currentTaskId, setCurrentTaskId] = useState<number | null>(null)
+  const [editorInstance, setEditorInstance] = useState<any>(null)
+  const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [panelWidth, setPanelWidth] = useState(() => {
     // Load saved width from localStorage or use default
     const saved = localStorage.getItem('rightPanelWidth')
@@ -245,14 +248,12 @@ const RightPanel: React.FC<RightPanelProps> = ({
     <div
       ref={panelRef}
       className={`
-        fixed top-0 right-0 h-full ${currentTheme.colors.background.panel} shadow-2xl overflow-hidden z-50
-        transform transition-transform duration-75 ease-out
-        ${visible ? "translate-x-0" : "translate-x-full"}
-        border-l ${currentTheme.colors.border.light}
+        flex-shrink-0 h-full ${currentTheme.colors.background.panel} shadow-lg overflow-hidden
+        border-l ${currentTheme.colors.border.light} flex flex-col
       `}
       style={{ 
         width: `${panelWidth}px`,
-        willChange: "transform, width",
+        willChange: "width",
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
@@ -277,17 +278,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
         <div className="absolute -left-2 top-0 w-4 h-full" />
       </div>
 
-      {/* Resize overlay during resizing */}
-      {isResizing && (
-        <div className="fixed inset-0 bg-black bg-opacity-10 z-40">
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-3 py-1 rounded-lg shadow-lg">
-            Width: {panelWidth}px
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className={`sticky top-0 ${currentTheme.colors.background.card} border-b ${currentTheme.colors.border.light} z-10`}>
+      {/* Header - Fixed */}
+      <div className={`flex-shrink-0 ${currentTheme.colors.background.card} border-b ${currentTheme.colors.border.light} z-10`}>
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 ${currentTheme.colors.primary.light} rounded-lg flex items-center justify-center`}>
@@ -339,37 +331,47 @@ const RightPanel: React.FC<RightPanelProps> = ({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="h-full overflow-y-auto pb-20">
-        <div className="px-6 py-4">
-          {/* Status indicators */}
-          <div className={`flex items-center justify-between pb-4 border-b ${currentTheme.colors.border.light}`}>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? currentTheme.colors.status.success.replace('text-', 'bg-') : currentTheme.colors.status.warning.replace('text-', 'bg-')}`} />
-                <span className={`text-sm ${currentTheme.colors.text.secondary}`}>
-                  {selectedTask.completed ? 'Completed' : 'In Progress'}
-                </span>
-              </div>
-              <div className={`w-px h-4 ${currentTheme.colors.border.medium}`} />
-              <div className="flex items-center gap-2">
-                <User size={12} className={currentTheme.colors.text.muted} />
-                <span className={`text-sm ${currentTheme.colors.text.secondary}`}>You</span>
-              </div>
+      {/* Status indicators - Fixed */}
+      <div className={`flex-shrink-0 px-6 py-4 border-b ${currentTheme.colors.border.light}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? currentTheme.colors.status.success.replace('text-', 'bg-') : currentTheme.colors.status.warning.replace('text-', 'bg-')}`} />
+              <span className={`text-sm ${currentTheme.colors.text.secondary}`}>
+                {selectedTask.completed ? 'Completed' : 'In Progress'}
+              </span>
             </div>
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? currentTheme.colors.primary.text : ''}`}>
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? `${currentTheme.colors.primary.dark} animate-pulse` : currentTheme.colors.status.success.replace('text-', 'bg-')}`}></div>
-                <span className="text-xs font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
-              </div>
-              <div className={`hidden sm:flex items-center gap-1.5 text-xs ${currentTheme.colors.text.muted}`}>
-                <span>Press</span>
-                <kbd className={`${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} px-1.5 py-0.5 rounded text-xs font-mono shadow-sm`}>/</kbd>
-                <span>for commands</span>
-              </div>
+            <div className={`w-px h-4 ${currentTheme.colors.border.medium}`} />
+            <div className="flex items-center gap-2">
+              <User size={12} className={currentTheme.colors.text.muted} />
+              <span className={`text-sm ${currentTheme.colors.text.secondary}`}>You</span>
             </div>
           </div>
+          <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? currentTheme.colors.primary.text : ''}`}>
+              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? `${currentTheme.colors.primary.dark} animate-pulse` : currentTheme.colors.status.success.replace('text-', 'bg-')}`}></div>
+              <span className="text-xs font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
+            </div>
+            <div className={`hidden sm:flex items-center gap-1.5 text-xs ${currentTheme.colors.text.muted}`}>
+              <span>Press</span>
+              <kbd className={`${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} px-1.5 py-0.5 rounded text-xs font-mono shadow-sm`}>/</kbd>
+              <span>for commands</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      {/* Editor Toolbar - Fixed */}
+      <div className={`flex-shrink-0 ${currentTheme.colors.background.panel} border-b ${currentTheme.colors.border.light}`}>
+        <EditorToolbar 
+          editor={editorInstance}
+          onLinkClick={() => setShowLinkDialog(true)}
+        />
+      </div>
+
+      {/* Scrollable Notes Content Area */}
+      <div className="flex-1 overflow-y-auto relative">
+        <div className="px-6 py-4">
           {/* Rich text editor */}
           <div className="bg-transparent -mx-6">
             <SimpleEditor
@@ -380,21 +382,23 @@ const RightPanel: React.FC<RightPanelProps> = ({
               onTypingChange={handleTypingChange}
               placeholder="Start writing your notes..."
               autoFocus={visible}
+              showToolbar={false}
+              onEditorReady={setEditorInstance}
             />
           </div>
         </div>
-      </div>
 
-      {/* Floating action hint */}
-      {!isEditing && !isTyping && (
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className={`${currentTheme.colors.primary.light} border ${currentTheme.colors.border.light} rounded-lg p-3`}>
-            <p className={`text-sm ${currentTheme.colors.primary.text}`}>
-              💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+B</kbd> for bold, <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+I</kbd> for italic, and <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>/</kbd> for commands!
-            </p>
+        {/* Floating action hint */}
+        {!isEditing && !isTyping && (
+          <div className="absolute bottom-6 left-6 right-6">
+            <div className={`${currentTheme.colors.primary.light} border ${currentTheme.colors.border.light} rounded-lg p-3`}>
+              <p className={`text-sm ${currentTheme.colors.primary.text}`}>
+                💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+B</kbd> for bold, <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+I</kbd> for italic, and <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>/</kbd> for commands!
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Keyboard shortcuts modal */}
       <KeyboardShortcuts 
