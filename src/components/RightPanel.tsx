@@ -379,6 +379,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
               onFocus={handleEditorFocus}
               onTypingChange={handleTypingChange}
               placeholder="Start writing your notes..."
+              autoFocus={visible}
             />
           </div>
         </div>

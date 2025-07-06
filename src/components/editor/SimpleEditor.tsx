@@ -28,6 +28,7 @@ interface SimpleEditorProps {
   onFocus?: () => void
   onTypingChange?: (isTyping: boolean) => void
   placeholder?: string
+  autoFocus?: boolean
 }
 
 const SimpleEditor: React.FC<SimpleEditorProps> = ({ 
@@ -35,7 +36,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   onChange, 
   onFocus, 
   onTypingChange,
-  placeholder = 'Press \'/\' for commands or just start typing...' 
+  placeholder = 'Press \'/\' for commands or just start typing...', 
+  autoFocus = false 
 }) => {
   const { currentTheme } = useTheme()
   const [showBlockMenu, setShowBlockMenu] = useState(false)
@@ -345,30 +347,6 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     }
   }
 
-  const showFloatingPlus = () => {
-    if (!editor) return false
-    const { state } = editor
-    const { selection } = state
-    const { $from } = selection
-    // Show plus button when cursor is on an empty line
-    return $from.parent.textContent === '' && selection.empty
-  }
-
-  const getCursorPosition = () => {
-    if (!editor) return { x: 0, y: 0 }
-    try {
-      const { state } = editor
-      const { selection } = state
-      const coords = editor.view.coordsAtPos(selection.anchor)
-      return { 
-        x: coords.left, 
-        y: coords.top 
-      }
-    } catch (error) {
-      // Fallback to a default position if calculation fails
-      return { x: 50, y: 50 }
-    }
-  }
 
   // Add placeholder when editor is empty
   useEffect(() => {
@@ -413,6 +391,17 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       document.removeEventListener('click', handleClickOutside)
     }
   }, [showBlockMenu])
+
+  // Auto-focus editor when component mounts if autoFocus is true
+  useEffect(() => {
+    if (autoFocus && editor) {
+      setTimeout(() => {
+        if (editor) {
+          editor.commands.focus('end')
+        }
+      }, 100)
+    }
+  }, [autoFocus, editor])
 
   if (!editor) {
     return (
