@@ -10,6 +10,7 @@ interface MiddlePanelProps {
   onEditNotes: (taskId: number) => void
   onCompleteTask: (taskId: number) => void
   onDeleteTask: (taskId: number) => void
+  workspaceName: string
 }
 
 const MiddlePanel = ({
@@ -18,6 +19,7 @@ const MiddlePanel = ({
   onEditNotes,
   onCompleteTask,
   onDeleteTask,
+  workspaceName,
 }: MiddlePanelProps) => {
   const { currentTheme } = useTheme()
   const [newTask, setNewTask] = useState("")
@@ -89,7 +91,7 @@ const MiddlePanel = ({
               <StickyNote size={20} className="text-white hidden md:block" />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className={`text-lg md:text-xl font-bold ${currentTheme.colors.text.primary} truncate`}>Tasks</h1>
+              <h1 className={`text-lg md:text-xl font-bold ${currentTheme.colors.text.primary} truncate`}>{workspaceName}</h1>
               <div className={`flex items-center gap-2 md:gap-4 text-xs md:text-sm ${currentTheme.colors.text.muted}`}>
                 <div className="flex items-center gap-1">
                   <Calendar size={10} className="md:hidden" />

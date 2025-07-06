@@ -286,6 +286,7 @@ const onDeleteTab = (tabId: string) => {
           onEditNotes={openNotesPanel}
           onCompleteTask={completeTask}
           onDeleteTask={deleteTask}
+          workspaceName={tabs[selectedTabId]?.name || "Tasks"}
         />
       </div>
 

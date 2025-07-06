@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, LogOut, Settings, Edit3, Check, X } from 'lucide-react';
+import { User, LogOut, Edit3, Check, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -44,10 +44,11 @@ const UserProfile: React.FC = () => {
     <div className="relative z-30">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="flex items-center gap-2 p-2 rounded-lg transition-colors hover:bg-opacity-80"
+        className="flex items-center gap-2 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-80 hover:scale-105"
         style={{ 
           backgroundColor: currentTheme.colors.background.hover,
-          color: currentTheme.colors.text.primary
+          color: currentTheme.colors.text.primary,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
         }}
       >
         <div 
@@ -78,17 +79,17 @@ const UserProfile: React.FC = () => {
             onClick={() => setShowDropdown(false)}
           />
           <div 
-            className="absolute right-0 top-full mt-2 w-80 rounded-lg shadow-2xl border z-[60] p-4"
+            className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl border z-[60] p-6 backdrop-blur-sm"
             style={{ 
               backgroundColor: currentTheme.colors.background.panel,
               borderColor: currentTheme.colors.border.medium,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
             }}
           >
             {/* Profile Header */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-4 mb-6">
               <div 
-                className="w-12 h-12 rounded-full flex items-center justify-center"
+                className="rounded-full flex items-center justify-center shadow-lg"
                 style={{ 
                   background: `linear-gradient(135deg, ${currentTheme.colors.primary.from}, ${currentTheme.colors.primary.to})`
                 }}
@@ -97,10 +98,10 @@ const UserProfile: React.FC = () => {
                   <img 
                     src={user.photoURL} 
                     alt={user.displayName || 'User'} 
-                    className="w-12 h-12 rounded-full"
+                    className=" rounded-full object-cover"
                   />
                 ) : (
-                  <User className="w-6 h-6 text-white" />
+                  <User className="w-7 h-7 text-white" />
                 )}
               </div>
               <div className="flex-1">
@@ -158,45 +159,35 @@ const UserProfile: React.FC = () => {
 
             {/* Divider */}
             <div 
-              className="h-px mb-4"
-              style={{ backgroundColor: currentTheme.colors.border.light }}
+              className="h-px mb-6 bg-gradient-to-r from-transparent via-current to-transparent opacity-20"
+              style={{ color: currentTheme.colors.border.medium }}
             />
 
             {/* Menu Items */}
-            <div className="space-y-2">
-              <button
-                className="w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left"
-                style={{ 
-                  color: currentTheme.colors.text.primary,
-                  backgroundColor: 'transparent'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = currentTheme.colors.background.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <Settings className="w-4 h-4" />
-                <span>Settings</span>
-              </button>
-
+            <div className="space-y-1">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 p-2 rounded-lg transition-colors text-left"
+                className="w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-left group"
                 style={{ 
                   color: currentTheme.colors.status.error,
-                  backgroundColor: 'transparent'
+                  backgroundColor: 'transparent',
+                  border: `1px solid ${currentTheme.colors.border.light}`
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = currentTheme.colors.background.hover;
+                  e.currentTarget.style.backgroundColor = currentTheme.colors.status.error;
+                  e.currentTarget.style.color = 'black';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = currentTheme.colors.status.error;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
+                <span className="font-medium">Sign Out</span>
               </button>
             </div>
           </div>
