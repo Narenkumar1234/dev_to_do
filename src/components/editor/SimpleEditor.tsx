@@ -19,6 +19,7 @@ import {
   Wand2,
   X
 } from 'lucide-react'
+import { useTheme } from '../../contexts/ThemeContext'
 import './simple-editor.css'
 
 interface SimpleEditorProps {
@@ -36,6 +37,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   onTypingChange,
   placeholder = 'Press \'/\' for commands or just start typing...' 
 }) => {
+  const { currentTheme } = useTheme()
   const [showBlockMenu, setShowBlockMenu] = useState(false)
   const [blockMenuPosition, setBlockMenuPosition] = useState({ x: 0, y: 0 })
   const [selectedBlockIndex, setSelectedBlockIndex] = useState(0)
@@ -426,20 +428,20 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   return (
     <div className="relative group/editor bg-transparent overflow-hidden">
       {/* Ultra Modern Toolbar */}
-      <div className="bg-gray-50/50 border-b border-gray-100 mb-4">
+      <div className={`${currentTheme.colors.background.hover} border-b ${currentTheme.colors.border.light} mb-4`}>
         <div className="px-4 py-3">
           {/* Two-row layout: Controls on first row */}
           <div className="flex flex-col gap-3">
             {/* Toolbar Controls */}
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* Primary Text Formatting */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
+              <div className={`flex items-center ${currentTheme.colors.background.card} backdrop-blur-sm rounded-xl shadow-sm border ${currentTheme.colors.border.light} p-1`}>
                 <button
                   onClick={() => editor.chain().focus().toggleBold().run()}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('bold') 
-                      ? 'bg-blue-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Bold (⌘B)"
                 >
@@ -449,8 +451,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onClick={() => editor.chain().focus().toggleItalic().run()}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('italic') 
-                      ? 'bg-blue-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Italic (⌘I)"
                 >
@@ -460,8 +462,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onClick={() => editor.chain().focus().toggleStrike().run()}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('strike') 
-                      ? 'bg-blue-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Strikethrough"
                 >
@@ -470,13 +472,13 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               </div>
 
               {/* Link & Media */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
+              <div className={`flex items-center ${currentTheme.colors.background.card} backdrop-blur-sm rounded-xl shadow-sm border ${currentTheme.colors.border.light} p-1`}>
                 <button
                   onClick={openLinkDialog}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('link') 
-                      ? 'bg-emerald-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.secondary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Link (⌘K)"
                 >
@@ -485,13 +487,13 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               </div>
               
               {/* Heading Controls */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
+              <div className={`flex items-center ${currentTheme.colors.background.card} backdrop-blur-sm rounded-xl shadow-sm border ${currentTheme.colors.border.light} p-1`}>
                 <button
                   onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                   className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-bold ${
                     editor.isActive('heading', { level: 1 }) 
-                      ? 'bg-indigo-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Heading 1"
                 >
@@ -501,8 +503,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                   className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-semibold ${
                     editor.isActive('heading', { level: 2 }) 
-                      ? 'bg-indigo-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Heading 2"
                 >
@@ -512,8 +514,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                   className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-xs font-medium ${
                     editor.isActive('heading', { level: 3 }) 
-                      ? 'bg-indigo-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.primary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Heading 3"
                 >
@@ -522,13 +524,13 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
               </div>
               
               {/* Lists & Blocks */}
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/60 p-1">
+              <div className={`flex items-center ${currentTheme.colors.background.card} backdrop-blur-sm rounded-xl shadow-sm border ${currentTheme.colors.border.light} p-1`}>
                 <button
                   onClick={() => editor.chain().focus().toggleBulletList().run()}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('bulletList') 
-                      ? 'bg-orange-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.secondary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Bullet List"
                 >
@@ -538,8 +540,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                   onClick={() => editor.chain().focus().toggleOrderedList().run()}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     editor.isActive('orderedList') 
-                      ? 'bg-orange-500 text-white shadow-sm' 
-                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                      ? `${currentTheme.colors.secondary.dark} text-white shadow-sm` 
+                      : `${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} hover:${currentTheme.colors.text.primary}`
                   }`}
                   title="Ordered List"
                 >

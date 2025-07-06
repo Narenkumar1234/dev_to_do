@@ -3,6 +3,7 @@ import { X, FileText, Calendar, Clock, User, Keyboard, GripVertical } from "luci
 import { Task } from "../types"
 import SimpleEditor from "./editor/SimpleEditor"
 import KeyboardShortcuts from "./editor/KeyboardShortcuts"
+import { useTheme } from "../contexts/ThemeContext"
 
 interface RightPanelProps {
   selectedTask: Task | null
@@ -19,6 +20,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
   visible,
   onWidthChange 
 }) => {
+  const { currentTheme } = useTheme()
   const [notes, setNotes] = useState("")
   const [isEditing, setIsEditing] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
@@ -206,10 +208,10 @@ const RightPanel: React.FC<RightPanelProps> = ({
     <div
       ref={panelRef}
       className={`
-        fixed top-0 right-0 h-full bg-white shadow-2xl overflow-hidden z-50
+        fixed top-0 right-0 h-full ${currentTheme.colors.background.panel} shadow-2xl overflow-hidden z-50
         transform transition-transform duration-75 ease-out
         ${visible ? "translate-x-0" : "translate-x-full"}
-        border-l border-gray-200
+        border-l ${currentTheme.colors.border.light}
       `}
       style={{ 
         width: `${panelWidth}px`,
@@ -222,14 +224,14 @@ const RightPanel: React.FC<RightPanelProps> = ({
         ref={resizeHandleRef}
         className={`
           absolute left-0 top-0 h-full w-1 cursor-col-resize z-10
-          ${isResizing ? 'w-2 bg-blue-500 transition-none' : 'bg-transparent hover:bg-blue-300 transition-all duration-100'}
+          ${isResizing ? `w-2 ${currentTheme.colors.primary.dark} transition-none` : `bg-transparent hover:${currentTheme.colors.primary.light} transition-all duration-100`}
         `}
         onMouseDown={handleMouseDown}
         title={isResizing ? `Width: ${panelWidth}px` : "Drag to resize panel"}
       >
         {/* Resize indicator */}
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="bg-blue-500 text-white p-1 rounded-full shadow-lg">
+          <div className={`${currentTheme.colors.primary.dark} text-white p-1 rounded-full shadow-lg`}>
             <GripVertical size={12} />
           </div>
         </div>
@@ -248,17 +250,17 @@ const RightPanel: React.FC<RightPanelProps> = ({
       )}
 
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-100 z-10">
+      <div className={`sticky top-0 ${currentTheme.colors.background.card} border-b ${currentTheme.colors.border.light} z-10`}>
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FileText size={16} className="text-blue-600" />
+            <div className={`w-8 h-8 ${currentTheme.colors.primary.light} rounded-lg flex items-center justify-center`}>
+              <FileText size={16} className={currentTheme.colors.primary.text} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 truncate max-w-64">
+              <h2 className={`text-lg font-semibold ${currentTheme.colors.text.primary} truncate max-w-64`}>
                 {taskTitle}
               </h2>
-              <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+              <div className={`flex items-center gap-4 text-xs ${currentTheme.colors.text.muted} mt-1`}>
                 <div className="flex items-center gap-1">
                   <Calendar size={12} />
                   {getCurrentDate()}
@@ -273,17 +275,17 @@ const RightPanel: React.FC<RightPanelProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowShortcuts(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className={`p-2 ${currentTheme.colors.background.hover} rounded-lg transition-colors`}
               title="Keyboard shortcuts"
             >
-              <Keyboard size={18} className="text-gray-500" />
+              <Keyboard size={18} className={currentTheme.colors.text.muted} />
             </button>
             <button
               onClick={handleClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className={`p-2 ${currentTheme.colors.background.hover} rounded-lg transition-colors`}
               aria-label="Close notes"
             >
-              <X size={20} className="text-gray-500" />
+              <X size={20} className={currentTheme.colors.text.muted} />
             </button>
           </div>
         </div>
@@ -293,28 +295,28 @@ const RightPanel: React.FC<RightPanelProps> = ({
       <div className="h-full overflow-y-auto pb-20">
         <div className="px-6 py-4">
           {/* Status indicators */}
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div className={`flex items-center justify-between pb-4 border-b ${currentTheme.colors.border.light}`}>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                <span className="text-sm text-gray-600">
+                <div className={`w-2 h-2 rounded-full ${selectedTask.completed ? currentTheme.colors.status.success.replace('text-', 'bg-') : currentTheme.colors.status.warning.replace('text-', 'bg-')}`} />
+                <span className={`text-sm ${currentTheme.colors.text.secondary}`}>
                   {selectedTask.completed ? 'Completed' : 'In Progress'}
                 </span>
               </div>
-              <div className="w-px h-4 bg-gray-300" />
+              <div className={`w-px h-4 ${currentTheme.colors.border.medium}`} />
               <div className="flex items-center gap-2">
-                <User size={12} className="text-gray-400" />
-                <span className="text-sm text-gray-600">You</span>
+                <User size={12} className={currentTheme.colors.text.muted} />
+                <span className={`text-sm ${currentTheme.colors.text.secondary}`}>You</span>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? 'text-blue-600' : ''}`}>
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? 'bg-blue-500 animate-pulse' : 'bg-emerald-400'}`}></div>
+              <div className={`flex items-center gap-1.5 transition-all duration-300 ${isTyping ? currentTheme.colors.primary.text : ''}`}>
+                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isTyping ? `${currentTheme.colors.primary.dark} animate-pulse` : currentTheme.colors.status.success.replace('text-', 'bg-')}`}></div>
                 <span className="text-xs font-medium whitespace-nowrap">{isTyping ? 'Typing...' : 'Saved'}</span>
               </div>
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
+              <div className={`hidden sm:flex items-center gap-1.5 text-xs ${currentTheme.colors.text.muted}`}>
                 <span>Press</span>
-                <kbd className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs font-mono shadow-sm">/</kbd>
+                <kbd className={`${currentTheme.colors.background.hover} ${currentTheme.colors.text.secondary} px-1.5 py-0.5 rounded text-xs font-mono shadow-sm`}>/</kbd>
                 <span>for commands</span>
               </div>
             </div>
@@ -337,9 +339,9 @@ const RightPanel: React.FC<RightPanelProps> = ({
       {/* Floating action hint */}
       {!isEditing && !isTyping && (
         <div className="absolute bottom-6 left-6 right-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-700">
-              💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className="bg-blue-100 px-1 rounded">Cmd+B</kbd> for bold, <kbd className="bg-blue-100 px-1 rounded">Cmd+I</kbd> for italic, and <kbd className="bg-blue-100 px-1 rounded">/</kbd> for commands!
+          <div className={`${currentTheme.colors.primary.light} border ${currentTheme.colors.border.light} rounded-lg p-3`}>
+            <p className={`text-sm ${currentTheme.colors.primary.text}`}>
+              💡 <strong>Tip:</strong> Click anywhere in the editor to start writing. Use <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+B</kbd> for bold, <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>Cmd+I</kbd> for italic, and <kbd className={`${currentTheme.colors.background.hover} px-1 rounded`}>/</kbd> for commands!
             </p>
           </div>
         </div>
