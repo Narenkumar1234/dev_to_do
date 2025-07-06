@@ -35,10 +35,35 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const resizeHandleRef = useRef<HTMLDivElement>(null)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Constants for resize constraints
   const MIN_WIDTH = 320 // Minimum width in pixels
   const MAX_WIDTH = 800 // Maximum width in pixels
+  const SAVE_DELAY = 1000 // Delay in milliseconds before saving (1 second)
+
+  // Debounced save function
+  const debouncedSave = useCallback((taskId: number, notesContent: string) => {
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    
+    // Set a new timeout
+    saveTimeoutRef.current = setTimeout(() => {
+      onSaveNotes(taskId, notesContent)
+      setIsTyping(false)
+    }, SAVE_DELAY)
+  }, [onSaveNotes])
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Handle resize functionality
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -138,6 +163,10 @@ const RightPanel: React.FC<RightPanelProps> = ({
     if (selectedTask && selectedTask.id !== currentTaskId) {
       // Save current notes before switching if we have a currentTaskId
       if (currentTaskId !== null) {
+        // Clear any pending debounced save and save immediately
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current)
+        }
         onSaveNotes(currentTaskId, notes)
       }
       
@@ -156,23 +185,31 @@ const RightPanel: React.FC<RightPanelProps> = ({
       
       // Reset editing state when switching tasks
       setIsEditing(false)
+      setIsTyping(false)
     }
   }, [selectedTask?.id, currentTaskId, notes, onSaveNotes])
 
   const handleClose = () => {
     if (currentTaskId) {
+      // Clear any pending debounced save and save immediately
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
       onSaveNotes(currentTaskId, notes)
     }
     setCurrentTaskId(null)
     onClose()
     setIsEditing(false)
+    setIsTyping(false)
   }
 
   const handleNotesChange = (newNotes: string) => {
     setNotes(newNotes)
+    setIsTyping(true)
+    
     // Only auto-save if we have a valid currentTaskId and it matches the selected task
     if (currentTaskId && selectedTask && currentTaskId === selectedTask.id) {
-      onSaveNotes(currentTaskId, newNotes)
+      debouncedSave(currentTaskId, newNotes)
     }
   }
 
@@ -273,6 +310,17 @@ const RightPanel: React.FC<RightPanelProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <div className="flex space-x-1">
+                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+                <span>Saving...</span>
+              </div>
+            )}
             <button
               onClick={() => setShowShortcuts(true)}
               className={`p-2 ${currentTheme.colors.background.hover} rounded-lg transition-colors`}
