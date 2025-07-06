@@ -79,7 +79,7 @@ const UserProfile: React.FC = () => {
             onClick={() => setShowDropdown(false)}
           />
           <div 
-            className="absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl border z-[60] p-6 backdrop-blur-sm"
+            className="absolute right-0 bg-white top-full mt-2 w-80 rounded-xl shadow-2xl border z-[60] p-6"
             style={{ 
               backgroundColor: currentTheme.colors.background.panel,
               borderColor: currentTheme.colors.border.medium,

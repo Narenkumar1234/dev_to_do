@@ -45,7 +45,7 @@ const AppContent = () => {
   const firebaseSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   const tasks = tasksByDate[selectedTabId] || []
-  const FIREBASE_SAVE_DELAY = 1500 // 1.5 seconds delay for Firebase saves
+  const FIREBASE_SAVE_DELAY = 20000 // 1.5 seconds delay for Firebase saves
 
   // Debounced Firebase save function
   const debouncedFirebaseSave = useCallback((tabId: string, tasksData: Task[]) => {
