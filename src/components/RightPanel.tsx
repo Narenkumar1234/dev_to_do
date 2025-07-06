@@ -249,7 +249,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
       ref={panelRef}
       className={`
         flex-shrink-0 h-full ${currentTheme.colors.background.panel} shadow-lg overflow-hidden
-        border-l ${currentTheme.colors.border.light} flex flex-col
+        border-l ${currentTheme.colors.border.light} flex flex-col relative
       `}
       style={{ 
         width: `${panelWidth}px`,
@@ -261,15 +261,15 @@ const RightPanel: React.FC<RightPanelProps> = ({
       <div
         ref={resizeHandleRef}
         className={`
-          absolute left-0 top-0 h-full w-1 cursor-col-resize z-10
-          ${isResizing ? `w-2 ${currentTheme.colors.primary.dark} transition-none` : `bg-transparent hover:${currentTheme.colors.primary.light} transition-all duration-100`}
+          absolute left-0 top-0 h-full w-1 cursor-col-resize z-20 group
+          ${isResizing ? `w-2 ${currentTheme.colors.primary.dark} transition-none` : `bg-gray-300 hover:bg-blue-500 hover:w-2 transition-all duration-100`}
         `}
         onMouseDown={handleMouseDown}
         title={isResizing ? `Width: ${panelWidth}px` : "Drag to resize panel"}
       >
         {/* Resize indicator */}
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className={`${currentTheme.colors.primary.dark} text-white p-1 rounded-full shadow-lg`}>
+          <div className="bg-blue-600 text-white p-1 rounded-full shadow-lg">
             <GripVertical size={12} />
           </div>
         </div>
