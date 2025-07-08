@@ -57,6 +57,9 @@ export const upsertTasksForTab = (tabId: string, tasks: TaskMap[string], dataSer
   current[tabId] = tasks;
   saveTasksToStorage(current);
   
+  // Invalidate cache since data changed
+  invalidateFirebaseCache()
+  
   // Save to Firebase if user is authenticated
   if (dataService) {
     dataService.saveTasks(tabId, tasks).catch(error => {
@@ -156,6 +159,9 @@ export const createNewTab = (name: string, dataService?: FirebaseDataService): {
   saveTabsToStorage(newTabs);
   saveTasksToStorage(currentTasks);
   
+  // Invalidate cache since data changed
+  invalidateFirebaseCache()
+  
   // Save to Firebase if user is authenticated
   if (dataService) {
     dataService.saveTab(newTab).catch(error => {
@@ -204,43 +210,101 @@ export const getLastSelectedTab = (): string | null => {
 /**
  * Sync local data with Firebase for authenticated users
  */
+// Cache for Firebase data to prevent unnecessary calls
+const dataCache = {
+  tasks: null as TaskMap | null,
+  tabs: null as TabsMap | null,
+  lastFetch: 0,
+  cacheTimeout: 5 * 60 * 1000 // 5 minutes cache
+}
+
+/**
+ * Check if cached data is still valid
+ */
+const isCacheValid = (): boolean => {
+  return Date.now() - dataCache.lastFetch < dataCache.cacheTimeout
+}
+
+/**
+ * Invalidate the Firebase data cache (call when data changes)
+ */
+export const invalidateFirebaseCache = (): void => {
+  dataCache.tasks = null
+  dataCache.tabs = null
+  dataCache.lastFetch = 0
+  console.log('Firebase cache invalidated')
+}
+
+/**
+ * Get cache status for debugging
+ */
+export const getCacheStatus = () => {
+  return {
+    isValid: isCacheValid(),
+    lastFetch: new Date(dataCache.lastFetch).toISOString(),
+    cacheAge: Date.now() - dataCache.lastFetch
+  }
+}
+
+/**
+ * Sync local data with Firebase - OPTIMIZED VERSION with caching
+ */
 export const syncDataWithFirebase = async (dataService: FirebaseDataService): Promise<{ tasks: TaskMap; tabs: TabsMap }> => {
   try {
-    // Get data from Firebase
+    // Get local data first
+    const localTasks = getTasksFromStorage()
+    const localTabs = getTabsFromStorage()
+    
+    // Check if we can use cached data
+    if (isCacheValid() && dataCache.tasks && dataCache.tabs) {
+      console.log('Using cached Firebase data')
+      return { tasks: dataCache.tasks, tabs: dataCache.tabs }
+    }
+
+    console.log('Fetching fresh data from Firebase...')
+    
+    // Get data from Firebase (parallel calls)
     const [firebaseTasks, firebaseTabs] = await Promise.all([
       dataService.getAllTasks(),
       dataService.getAllTabs()
-    ]);
+    ])
     
-    // Get local data
-    const localTasks = getTasksFromStorage();
-    const localTabs = getTabsFromStorage();
+    // Update cache
+    dataCache.tasks = firebaseTasks
+    dataCache.tabs = firebaseTabs
+    dataCache.lastFetch = Date.now()
     
-    // Merge data (Firebase takes precedence for now, but you can implement more sophisticated merging)
-    const mergedTasks = { ...localTasks, ...firebaseTasks };
-    const mergedTabs = { ...localTabs, ...firebaseTabs };
+    // Merge data (Firebase takes precedence)
+    const mergedTasks = { ...localTasks, ...firebaseTasks }
+    const mergedTabs = { ...localTabs, ...firebaseTabs }
     
     // Save merged data locally
-    saveTasksToStorage(mergedTasks);
-    saveTabsToStorage(mergedTabs);
+    saveTasksToStorage(mergedTasks)
+    saveTabsToStorage(mergedTabs)
     
-    // If local data had items not in Firebase, sync them up
-    const localTabIds = Object.keys(localTabs);
-    const firebaseTabIds = Object.keys(firebaseTabs);
+    // Efficiently sync local-only data (batch operation)
+    const localTabIds = Object.keys(localTabs)
+    const firebaseTabIds = Object.keys(firebaseTabs)
+    const localOnlyTabIds = localTabIds.filter(id => !firebaseTabIds.includes(id))
     
-    for (const tabId of localTabIds) {
-      if (!firebaseTabIds.includes(tabId)) {
-        await dataService.saveTab(localTabs[tabId]);
+    if (localOnlyTabIds.length > 0) {
+      console.log(`Syncing ${localOnlyTabIds.length} local-only tabs to Firebase`)
+      
+      // Batch the uploads
+      const batchOperations = localOnlyTabIds.map(async (tabId) => {
+        await dataService.saveTab(localTabs[tabId])
         if (localTasks[tabId]) {
-          await dataService.saveTasks(tabId, localTasks[tabId]);
+          await dataService.saveTasks(tabId, localTasks[tabId])
         }
-      }
+      })
+      
+      await Promise.all(batchOperations)
     }
     
-    return { tasks: mergedTasks, tabs: mergedTabs };
+    return { tasks: mergedTasks, tabs: mergedTabs }
   } catch (error) {
-    console.error('Failed to sync data with Firebase:', error);
+    console.error('Failed to sync data with Firebase:', error)
     // Return local data as fallback
-    return { tasks: getTasksFromStorage(), tabs: getTabsFromStorage() };
+    return { tasks: getTasksFromStorage(), tabs: getTabsFromStorage() }
   }
-};
+}

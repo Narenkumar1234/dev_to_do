@@ -115,12 +115,27 @@ const AppContent = () => {
       setSelectedTabId(defaultTabId);
       setDataLoaded(true);
 
-      // If user is authenticated, try to sync with Firebase
+      // If user is authenticated, try to sync with Firebase (with smart caching)
       if (user && dataService) {
         try {
-          console.log('User authenticated, syncing with Firebase...');
+          console.log('User authenticated, checking if sync needed...');
+          
+          // Check if we have recent local data and user just refreshed
+          const hasLocalData = Object.keys(tasks).length > 0 || Object.keys(tabsData).length > 0
+          const isRecentRefresh = sessionStorage.getItem('lastSync') && 
+            Date.now() - parseInt(sessionStorage.getItem('lastSync') || '0') < 60000 // 1 minute
+          
+          if (hasLocalData && isRecentRefresh) {
+            console.log('Using local data, skipping immediate sync');
+            return
+          }
+          
           showSyncNotification('Syncing your data with cloud...');
           const { tasks: syncedTasks, tabs: syncedTabs } = await syncDataWithFirebase(dataService);
+          
+          // Store sync timestamp
+          sessionStorage.setItem('lastSync', Date.now().toString())
+          
           setTasksByDate(syncedTasks);
           setTabs(syncedTabs);
           showSuccessNotification('Data synced successfully!');
