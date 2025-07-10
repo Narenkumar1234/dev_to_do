@@ -60,12 +60,8 @@ export const upsertTasksForTab = (tabId: string, tasks: TaskMap[string], dataSer
   // Invalidate cache since data changed
   invalidateFirebaseCache()
   
-  // Save to Firebase if user is authenticated
-  if (dataService) {
-    dataService.saveTasks(tabId, tasks).catch(error => {
-      console.error('Failed to sync tasks to Firebase:', error);
-    });
-  }
+  // Note: Firebase auto-save is now handled by debounced save in App.tsx
+  // This function only handles localStorage to maintain instant local saves
 };
 
 /**

@@ -9,7 +9,8 @@ import {
   where, 
   orderBy,
   onSnapshot,
-  Timestamp
+  Timestamp,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Task, TaskMap, Tab, TabsMap } from '../types';
@@ -209,6 +210,105 @@ export class FirebaseDataService {
       }
     } catch (error) {
       console.error('Error syncing local data to cloud:', error);
+      throw error;
+    }
+  }
+
+  // Batch operations - MUCH MORE EFFICIENT
+  async batchSaveAll(tabId: string, tasks: Task[], allTabs: TabsMap) {
+    try {
+      const batch = writeBatch(db);
+      
+      // Save current tab tasks
+      if (tasks.length > 0) {
+        const taskDoc = doc(this.tasksCollection, tabId);
+        batch.set(taskDoc, {
+          tabId,
+          tasks,
+          updatedAt: Timestamp.now()
+        });
+      }
+      
+      // Save all tabs in one batch
+      const tabsArray = Object.values(allTabs);
+      for (const tab of tabsArray) {
+        const tabDoc = doc(this.tabsCollection, tab.id);
+        batch.set(tabDoc, {
+          ...tab,
+          updatedAt: Timestamp.now()
+        });
+      }
+      
+      // Execute all operations in a single batch (1 API call instead of 13!)
+      await batch.commit();
+      
+      console.log(`Batch saved 1 task collection + ${tabsArray.length} tabs in 1 API call`);
+    } catch (error) {
+      console.error('Error in batch save:', error);
+      throw error;
+    }
+  }
+
+  // Efficient save - only save what changed
+  async saveCurrentTabOnly(tabId: string, tasks: Task[]) {
+    try {
+      const taskDoc = doc(this.tasksCollection, tabId);
+      await setDoc(taskDoc, {
+        tabId,
+        tasks,
+        updatedAt: Timestamp.now()
+      });
+      console.log(`Saved only current tab: ${tabId}`);
+    } catch (error) {
+      console.error('Error saving current tab:', error);
+      throw error;
+    }
+  }
+
+  // Smart save - only save what actually changed
+  async smartSave(
+    tasksChanged: Set<string>,
+    tabsChanged: Set<string>, 
+    allTasks: TaskMap,
+    allTabs: TabsMap
+  ) {
+    try {
+      const batch = writeBatch(db);
+      let operationCount = 0;
+
+      // Save only changed tasks
+      for (const tabId of tasksChanged) {
+        if (allTasks[tabId]) {
+          const taskDoc = doc(this.tasksCollection, tabId);
+          batch.set(taskDoc, {
+            tabId,
+            tasks: allTasks[tabId],
+            updatedAt: Timestamp.now()
+          });
+          operationCount++;
+        }
+      }
+
+      // Save only changed tabs
+      for (const tabId of tabsChanged) {
+        if (allTabs[tabId]) {
+          const tabDoc = doc(this.tabsCollection, tabId);
+          batch.set(tabDoc, {
+            ...allTabs[tabId],
+            updatedAt: Timestamp.now()
+          });
+          operationCount++;
+        }
+      }
+
+      if (operationCount > 0) {
+        await batch.commit();
+        console.log(`Smart save: ${operationCount} operations in 1 batch`);
+      } else {
+        console.log('Smart save: No changes detected');
+      }
+    } catch (error) {
+      console.error('Error in smart save:', error);
       throw error;
     }
   }

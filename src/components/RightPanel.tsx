@@ -302,17 +302,6 @@ const RightPanel: React.FC<RightPanelProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Typing indicator */}
-            {isTyping && (
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <div className="flex space-x-1">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-1 h-1 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                </div>
-                <span>Saving...</span>
-              </div>
-            )}
             <button
               onClick={() => setShowShortcuts(true)}
               className={`p-2 ${currentTheme.colors.background.hover} rounded-lg transition-colors`}

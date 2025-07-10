@@ -41,20 +41,28 @@ const AppContent = () => {
   const firebaseSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   const tasks = tasksByDate[selectedTabId] || []
-  const FIREBASE_SAVE_DELAY = 20000 // 1.5 seconds delay for Firebase saves
+  const FIREBASE_SAVE_DELAY = 30000 // 30 seconds delay for Firebase saves (optimized)
 
-  // Debounced Firebase save function
+  // Debounced Firebase save function with batch operations
   const debouncedFirebaseSave = useCallback((tabId: string, tasksData: Task[]) => {
     // Clear any existing timeout
     if (firebaseSaveTimeoutRef.current) {
       clearTimeout(firebaseSaveTimeoutRef.current)
     }
     
-    // Set a new timeout
-    firebaseSaveTimeoutRef.current = setTimeout(() => {
-      upsertTasksForTab(tabId, tasksData, dataService || undefined)
+    // Set a new timeout with batch save
+    firebaseSaveTimeoutRef.current = setTimeout(async () => {
+      if (dataService) {
+        try {
+          // Use batch save to reduce API calls
+          await dataService.batchSaveAll(tabId, tasksData, tabs);
+          console.log('Auto-saved to Firebase using batch operation');
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        }
+      }
     }, FIREBASE_SAVE_DELAY)
-  }, [dataService])
+  }, [dataService, tabs])
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -66,12 +74,19 @@ const AppContent = () => {
   }, [])
 
   // Handle immediate Firebase save when needed (e.g., on tab switch, app close)
-  const immediateFirebaseSave = useCallback((tabId: string, tasksData: Task[]) => {
+  const immediateFirebaseSave = useCallback(async (tabId: string, tasksData: Task[]) => {
     if (firebaseSaveTimeoutRef.current) {
       clearTimeout(firebaseSaveTimeoutRef.current)
     }
-    upsertTasksForTab(tabId, tasksData, dataService || undefined)
-  }, [dataService])
+    if (dataService) {
+      try {
+        await dataService.batchSaveAll(tabId, tasksData, tabs);
+        console.log('Immediate save to Firebase using batch operation');
+      } catch (error) {
+        console.error('Immediate save failed:', error);
+      }
+    }
+  }, [dataService, tabs])
 
   // Save immediately when switching tabs
   useEffect(() => {
@@ -159,43 +174,41 @@ const AppContent = () => {
     loadData();
   }, [user, dataService, today]);
 
+  // Auto-save when tasks change
   useEffect(() => {
     if (dataLoaded && selectedTabId && tasksByDate[selectedTabId]) {
       debouncedFirebaseSave(selectedTabId, tasksByDate[selectedTabId])
     }
   }, [tasksByDate, selectedTabId, dataLoaded, debouncedFirebaseSave])
 
-// Save the last selected tab when it changes
-useEffect(() => {
-  if (selectedTabId) {
-    saveLastSelectedTab(selectedTabId);
+  // Save the last selected tab when it changes
+  useEffect(() => {
+    if (selectedTabId) {
+      saveLastSelectedTab(selectedTabId);
   }
-}, [selectedTabId]);
-
-
-const onDeleteTab = (tabId: string) => {
-  deleteTabFromStorage(tabId, dataService || undefined);
-  setTasksByDate(prev => {
-    const { [tabId]: _, ...rest } = prev;
-    return rest;
-  });
-  setTabs(prev => {
-    const { [tabId]: _, ...rest } = prev;
-    return rest;
-  });
-  if (selectedTabId === tabId) {
-    const remainingTabIds = Object.keys(tasksByDate).filter(id => id !== tabId);
-    if (remainingTabIds.length > 0) {
-      setSelectedTabId(remainingTabIds[0]);
-    } else {
-      // If no tabs remain, create a new default tab
-      const { tasks, tabs: tabsData, defaultTabId } = initializeApp(today);
-      setTasksByDate(tasks);
-      setTabs(tabsData);
-      setSelectedTabId(defaultTabId);
+}, [selectedTabId]);  const onDeleteTab = (tabId: string) => {
+    deleteTabFromStorage(tabId, dataService || undefined); // Restore auto-save
+    setTasksByDate(prev => {
+      const { [tabId]: _, ...rest } = prev;
+      return rest;
+    });
+    setTabs(prev => {
+      const { [tabId]: _, ...rest } = prev;
+      return rest;
+    });
+    if (selectedTabId === tabId) {
+      const remainingTabIds = Object.keys(tasksByDate).filter(id => id !== tabId);
+      if (remainingTabIds.length > 0) {
+        setSelectedTabId(remainingTabIds[0]);
+      } else {
+        // If no tabs remain, create a new default tab
+        const { tasks, tabs: tabsData, defaultTabId } = initializeApp(today);
+        setTasksByDate(tasks);
+        setTabs(tabsData);
+        setSelectedTabId(defaultTabId);
+      }
     }
-  }
-};
+  };
 
   const addTask = (text: string) => {
     const newTask: Task = {
@@ -207,6 +220,8 @@ const onDeleteTab = (tabId: string) => {
     // Add new task at the beginning of the array
     const updatedTasks = [newTask, ...tasks]
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updatedTasks }))
+    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    upsertTasksForTab(selectedTabId, updatedTasks, undefined)
   }
 
   const completeTask = (taskId: number) => {
@@ -215,11 +230,15 @@ const onDeleteTab = (tabId: string) => {
     )
     // Keep all tasks, just toggle completed state
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
+    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    upsertTasksForTab(selectedTabId, updated, undefined)
   }
 
   const deleteTask = (taskId: number) => {
     const updated = tasksByDate[selectedTabId].filter(task => task.id !== taskId)
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
+    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    upsertTasksForTab(selectedTabId, updated, undefined)
   }
 
   const openNotesPanel = (taskId: number) => {
@@ -240,6 +259,8 @@ const onDeleteTab = (tabId: string) => {
       return task
     })
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
+    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    upsertTasksForTab(selectedTabId, updated, undefined)
   }
 
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null
@@ -251,11 +272,11 @@ const onDeleteTab = (tabId: string) => {
         activeTabId={selectedTabId}
         onTabClick={setSelectedTabId}
         onRenameTab={(tabId: string, newName: string) => {
-          const updatedTabs = renameTab(tabId, newName, dataService || undefined);
+          const updatedTabs = renameTab(tabId, newName, dataService || undefined); // Restore auto-save
           setTabs(updatedTabs);
         }}
         onNewTab={(name: string) => {
-          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined);
+          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined); // Restore auto-save
           setTabs(updatedTabs);
           setTasksByDate(updatedTasks);
           setSelectedTabId(tabId); // Auto-select new tab
