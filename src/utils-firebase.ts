@@ -243,6 +243,34 @@ export const getCacheStatus = () => {
 }
 
 /**
+ * Smart sync for login scenario - only upload local-only data
+ */
+export const smartInitialSync = async (dataService: FirebaseDataService): Promise<{ tasks: TaskMap; tabs: TabsMap }> => {
+  try {
+    const localTasks = getTasksFromStorage()
+    const localTabs = getTabsFromStorage()
+    
+    console.log('Performing smart initial sync...')
+    const { tasks: mergedTasks, tabs: mergedTabs } = await dataService.smartInitialSync(localTasks, localTabs)
+    
+    // Update cache
+    dataCache.tasks = mergedTasks
+    dataCache.tabs = mergedTabs
+    dataCache.lastFetch = Date.now()
+    
+    // Save merged data locally
+    saveTasksToStorage(mergedTasks)
+    saveTabsToStorage(mergedTabs)
+    
+    return { tasks: mergedTasks, tabs: mergedTabs }
+  } catch (error) {
+    console.error('Failed to perform smart initial sync:', error)
+    // Return local data as fallback
+    return { tasks: getTasksFromStorage(), tabs: getTabsFromStorage() }
+  }
+}
+
+/**
  * Sync local data with Firebase - OPTIMIZED VERSION with caching
  */
 export const syncDataWithFirebase = async (dataService: FirebaseDataService): Promise<{ tasks: TaskMap; tabs: TabsMap }> => {

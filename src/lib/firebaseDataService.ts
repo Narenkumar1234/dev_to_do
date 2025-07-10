@@ -214,7 +214,23 @@ export class FirebaseDataService {
     }
   }
 
-  // Batch operations - MUCH MORE EFFICIENT
+  // Optimized save - only save the current tab's tasks (no mass tab updates)
+  async saveCurrentTabTasks(tabId: string, tasks: Task[]) {
+    try {
+      const taskDoc = doc(this.tasksCollection, tabId);
+      await setDoc(taskDoc, {
+        tabId,
+        tasks,
+        updatedAt: Timestamp.now()
+      });
+      console.log(`✅ Saved tasks for tab: ${tabId} (${tasks.length} tasks)`);
+    } catch (error) {
+      console.error('❌ Error saving current tab tasks:', error);
+      throw error;
+    }
+  }
+
+  // Batch operations - MUCH MORE EFFICIENT (only for initial sync)
   async batchSaveAll(tabId: string, tasks: Task[], allTabs: TabsMap) {
     try {
       const batch = writeBatch(db);
@@ -245,6 +261,63 @@ export class FirebaseDataService {
       console.log(`Batch saved 1 task collection + ${tabsArray.length} tabs in 1 API call`);
     } catch (error) {
       console.error('Error in batch save:', error);
+      throw error;
+    }
+  }
+
+  // Smart initial sync - only upload local-only data (for login scenarios)
+  async smartInitialSync(localTasks: TaskMap, localTabs: TabsMap): Promise<{ tasks: TaskMap; tabs: TabsMap }> {
+    try {
+      // Get existing Firebase data
+      const [firebaseTasks, firebaseTabs] = await Promise.all([
+        this.getAllTasks(),
+        this.getAllTabs()
+      ]);
+
+      // Find local-only tabs (not in Firebase)
+      const localTabIds = Object.keys(localTabs);
+      const firebaseTabIds = Object.keys(firebaseTabs);
+      const localOnlyTabIds = localTabIds.filter(id => !firebaseTabIds.includes(id));
+
+      // Only upload local-only data
+      if (localOnlyTabIds.length > 0) {
+        console.log(`🔄 Uploading ${localOnlyTabIds.length} local-only tabs to Firebase`);
+        
+        const batch = writeBatch(db);
+        
+        // Batch upload only new tabs and their tasks
+        for (const tabId of localOnlyTabIds) {
+          // Upload tab
+          const tabDoc = doc(this.tabsCollection, tabId);
+          batch.set(tabDoc, {
+            ...localTabs[tabId],
+            updatedAt: Timestamp.now()
+          });
+          
+          // Upload tasks if they exist
+          if (localTasks[tabId] && localTasks[tabId].length > 0) {
+            const taskDoc = doc(this.tasksCollection, tabId);
+            batch.set(taskDoc, {
+              tabId,
+              tasks: localTasks[tabId],
+              updatedAt: Timestamp.now()
+            });
+          }
+        }
+        
+        await batch.commit();
+        console.log(`✅ Successfully uploaded ${localOnlyTabIds.length} local-only tabs`);
+      } else {
+        console.log('✅ No local-only tabs to upload - all data already synced');
+      }
+
+      // Return merged data (Firebase takes precedence)
+      return {
+        tasks: { ...localTasks, ...firebaseTasks },
+        tabs: { ...localTabs, ...firebaseTabs }
+      };
+    } catch (error) {
+      console.error('Error in smart initial sync:', error);
       throw error;
     }
   }

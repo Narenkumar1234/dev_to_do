@@ -20,9 +20,7 @@ import {
   createNewTab,
   renameTab,
   saveLastSelectedTab,
-  getTasksFromStorage,
-  getTabsFromStorage,
-  syncDataWithFirebase
+  smartInitialSync
 } from "./utils-firebase";
 
 const AppContent = () => {
@@ -43,26 +41,26 @@ const AppContent = () => {
   const tasks = tasksByDate[selectedTabId] || []
   const FIREBASE_SAVE_DELAY = 30000 // 30 seconds delay for Firebase saves (optimized)
 
-  // Debounced Firebase save function with batch operations
+  // Debounced Firebase save function - only save tasks, not all tabs
   const debouncedFirebaseSave = useCallback((tabId: string, tasksData: Task[]) => {
     // Clear any existing timeout
     if (firebaseSaveTimeoutRef.current) {
       clearTimeout(firebaseSaveTimeoutRef.current)
     }
     
-    // Set a new timeout with batch save
+    // Set a new timeout for tasks only
     firebaseSaveTimeoutRef.current = setTimeout(async () => {
       if (dataService) {
         try {
-          // Use batch save to reduce API calls
-          await dataService.batchSaveAll(tabId, tasksData, tabs);
-          console.log('Auto-saved to Firebase using batch operation');
+          // Only save the current tab's tasks - don't re-upload all tabs
+          await dataService.saveCurrentTabTasks(tabId, tasksData);
+          console.log('Auto-saved tasks to Firebase (tasks only)');
         } catch (error) {
           console.error('Auto-save failed:', error);
         }
       }
     }, FIREBASE_SAVE_DELAY)
-  }, [dataService, tabs])
+  }, [dataService])
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -80,13 +78,13 @@ const AppContent = () => {
     }
     if (dataService) {
       try {
-        await dataService.batchSaveAll(tabId, tasksData, tabs);
-        console.log('Immediate save to Firebase using batch operation');
+        await dataService.saveCurrentTabTasks(tabId, tasksData);
+        console.log('Immediate save to Firebase (tasks only)');
       } catch (error) {
         console.error('Immediate save failed:', error);
       }
     }
-  }, [dataService, tabs])
+  }, [dataService])
 
   // Save immediately when switching tabs
   useEffect(() => {
@@ -138,19 +136,21 @@ const AppContent = () => {
           
           // Check if we have recent local data and user just refreshed
           const hasLocalData = Object.keys(tasks).length > 0 || Object.keys(tabsData).length > 0
-          const isRecentRefresh = sessionStorage.getItem('lastSync') && 
-            Date.now() - parseInt(sessionStorage.getItem('lastSync') || '0') < 60000 // 1 minute
+          const syncKey = `lastSync_${user.uid}`
+          const lastSyncTime = sessionStorage.getItem(syncKey)
+          const isRecentRefresh = lastSyncTime && 
+            Date.now() - parseInt(lastSyncTime) < 5 * 60 * 1000 // 5 minutes
           
           if (hasLocalData && isRecentRefresh) {
-            console.log('Using local data, skipping immediate sync');
+            console.log('Using local data, skipping sync (recent refresh detected)');
             return
           }
           
           showSyncNotification('Syncing your data with cloud...');
-          const { tasks: syncedTasks, tabs: syncedTabs } = await syncDataWithFirebase(dataService);
+          const { tasks: syncedTasks, tabs: syncedTabs } = await smartInitialSync(dataService);
           
-          // Store sync timestamp
-          sessionStorage.setItem('lastSync', Date.now().toString())
+          // Store sync timestamp per user
+          sessionStorage.setItem(syncKey, Date.now().toString())
           
           setTasksByDate(syncedTasks);
           setTabs(syncedTabs);
