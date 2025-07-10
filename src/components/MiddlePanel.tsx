@@ -11,6 +11,7 @@ interface MiddlePanelProps {
   onCompleteTask: (taskId: number) => void
   onDeleteTask: (taskId: number) => void
   workspaceName: string
+  selectedTaskId: number | null
 }
 
 const MiddlePanel = ({
@@ -20,6 +21,7 @@ const MiddlePanel = ({
   onCompleteTask,
   onDeleteTask,
   workspaceName,
+  selectedTaskId,
 }: MiddlePanelProps) => {
   const { currentTheme } = useTheme()
   const [newTask, setNewTask] = useState("")
@@ -172,11 +174,23 @@ const MiddlePanel = ({
               <span className="truncate">Pending Tasks ({pendingTasks.length})</span>
             </h3>
             <div className="space-y-3">
-              {pendingTasks.map(task => (
+              {pendingTasks.map(task => {
+                const isSelected = selectedTaskId === task.id;
+                return (
                 <div
                   id={"task"+task.id}
                   key={task.id}
-                  className={`group ${currentTheme.colors.background.card} rounded-xl border ${currentTheme.colors.border.light} p-3 md:p-4 ${currentTheme.colors.background.hover} hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
+                  className={`group ${currentTheme.colors.background.card} rounded-xl border ${
+                    isSelected 
+                      ? `${currentTheme.colors.primary.dark} shadow-lg scale-[1.02]` 
+                      : `${currentTheme.colors.border.light} hover:${currentTheme.colors.border.medium}`
+                  } p-3 md:p-4 ${
+                    isSelected 
+                      ? `${currentTheme.colors.primary.light} shadow-lg` 
+                      : `${currentTheme.colors.background.hover} hover:shadow-lg`
+                  } transition-all duration-200 cursor-pointer ${
+                    isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                  }`}
                   onClick={() => onEditNotes(task.id)}
                 >
                   <div className="flex items-start gap-3">
@@ -192,7 +206,9 @@ const MiddlePanel = ({
                     </button>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium ${currentTheme.colors.text.primary} mb-1 group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 text-sm md:text-base break-words`}>
+                      <h4 className={`font-medium ${
+                        isSelected ? currentTheme.colors.primary.text : currentTheme.colors.text.primary
+                      } mb-1 group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 text-sm md:text-base break-words`}>
                         {task.text}
                       </h4>
                       <div className={`flex items-center gap-2 text-xs md:text-sm ${currentTheme.colors.text.muted}`}>
@@ -217,7 +233,7 @@ const MiddlePanel = ({
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}
@@ -229,11 +245,23 @@ const MiddlePanel = ({
               <span className="truncate">Completed Tasks ({completedTasks.length})</span>
             </h3>
             <div className="space-y-3">
-              {completedTasks.map(task => (
+              {completedTasks.map(task => {
+                const isSelected = selectedTaskId === task.id;
+                return (
                 <div
                   id={"task"+task.id}
                   key={task.id}
-                  className={`group ${currentTheme.colors.secondary.light} rounded-xl border ${currentTheme.colors.border.light} p-3 md:p-4 ${currentTheme.colors.background.hover} hover:shadow-lg hover:${currentTheme.colors.border.medium} transition-all duration-200 cursor-pointer`}
+                  className={`group ${currentTheme.colors.secondary.light} rounded-xl border ${
+                    isSelected 
+                      ? `${currentTheme.colors.primary.dark} shadow-lg scale-[1.02]` 
+                      : `${currentTheme.colors.border.light} hover:${currentTheme.colors.border.medium}`
+                  } p-3 md:p-4 ${
+                    isSelected 
+                      ? `${currentTheme.colors.primary.light} shadow-lg` 
+                      : `hover:bg-gray-50 hover:shadow-lg`
+                  } transition-all duration-200 cursor-pointer ${
+                    isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                  }`}
                   onClick={() => onEditNotes(task.id)}
                 >
                   <div className="flex items-start gap-3">
@@ -242,14 +270,16 @@ const MiddlePanel = ({
                         e.stopPropagation();
                         onCompleteTask(task.id);
                       }}
-                      className={`mt-1 p-1 rounded-full ${currentTheme.colors.background.hover} transition-colors duration-200 flex-shrink-0`}
+                      className={`mt-1 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 flex-shrink-0`}
                       title="Mark as incomplete"
                     >
                       <CheckCircle2 size={18} className={`md:w-5 md:h-5 ${currentTheme.colors.secondary.text} hover:${currentTheme.colors.secondary.text} transition-colors duration-200`} />
                     </button>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium ${currentTheme.colors.text.secondary} mb-1 line-through group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 text-sm md:text-base break-words`}>
+                      <h4 className={`font-medium ${
+                        isSelected ? currentTheme.colors.primary.text : currentTheme.colors.text.secondary
+                      } mb-1 line-through group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 text-sm md:text-base break-words`}>
                         {task.text}
                       </h4>
                       <div className={`flex items-center gap-2 text-xs md:text-sm ${currentTheme.colors.text.muted}`}>
@@ -274,7 +304,7 @@ const MiddlePanel = ({
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}

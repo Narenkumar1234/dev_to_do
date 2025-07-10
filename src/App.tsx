@@ -6,6 +6,7 @@ import RightPanel from "./components/RightPanel"
 import UserProfile from "./components/UserProfile"
 import SignInButton from "./components/SignInButton"
 import ProtectedRoute from "./components/ProtectedRoute"
+import VizgoLogo from "./components/VizgoLogo"
 import { Task, TaskMap, Tab, TabsMap } from "./types"
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext"
 import { AuthProvider, useAuth } from "./contexts/AuthContext"
@@ -271,13 +272,8 @@ const onDeleteTab = (tabId: string) => {
             borderColor: currentTheme.colors.border.light
           }}
         >
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: currentTheme.colors.text.primary }}>
-              Dev Tasks
-            </h1>
-            <p className="text-sm" style={{ color: currentTheme.colors.text.muted }}>
-              {dayjs().format('MMMM D, YYYY')}
-            </p>
+          <div className="flex items-center gap-3">
+            <VizgoLogo size={90} className={currentTheme.colors.primary.text} />
           </div>
           <div className="flex items-center gap-4">
             {user ? <UserProfile /> : <SignInButton />}
@@ -291,6 +287,7 @@ const onDeleteTab = (tabId: string) => {
           onCompleteTask={completeTask}
           onDeleteTask={deleteTask}
           workspaceName={tabs[selectedTabId]?.name || "Tasks"}
+          selectedTaskId={selectedTaskId}
         />
       </div>
 
