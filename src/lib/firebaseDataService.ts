@@ -385,4 +385,34 @@ export class FirebaseDataService {
       throw error;
     }
   }
+
+  // Manual save - saves both tasks and tab info in a single batch
+  async manualSave(tabId: string, tasks: Task[], tab: Tab) {
+    try {
+      const batch = writeBatch(db);
+      
+      // Save tasks
+      const taskDoc = doc(this.tasksCollection, tabId);
+      batch.set(taskDoc, {
+        tabId,
+        tasks,
+        updatedAt: Timestamp.now()
+      });
+      
+      // Save tab info
+      const tabDoc = doc(this.tabsCollection, tab.id);
+      batch.set(tabDoc, {
+        ...tab,
+        updatedAt: Timestamp.now()
+      });
+      
+      // Execute both operations in a single batch (1 API call instead of 2!)
+      await batch.commit();
+      
+      console.log(`✅ Manual save completed for tab: ${tabId} (1 batch call)`);
+    } catch (error) {
+      console.error('❌ Error in manual save:', error);
+      throw error;
+    }
+  }
 }

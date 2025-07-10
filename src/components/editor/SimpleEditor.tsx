@@ -20,6 +20,7 @@ import {
   X
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useSaveStatus } from '../../contexts/SaveStatusContext'
 import './simple-editor.css'
 
 interface SimpleEditorProps {
@@ -44,6 +45,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   onEditorReady
 }) => {
   const { currentTheme } = useTheme()
+  const { markUnsaved } = useSaveStatus()
   const [showBlockMenu, setShowBlockMenu] = useState(false)
   const [blockMenuPosition, setBlockMenuPosition] = useState({ x: 0, y: 0 })
   const [selectedBlockIndex, setSelectedBlockIndex] = useState(0)
@@ -117,6 +119,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
+      markUnsaved() // Mark as unsaved when notes are edited
       setIsTyping(true)
       if (onTypingChange) {
         onTypingChange(true)

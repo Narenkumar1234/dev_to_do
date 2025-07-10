@@ -57,11 +57,8 @@ export const upsertTasksForTab = (tabId: string, tasks: TaskMap[string], dataSer
   current[tabId] = tasks;
   saveTasksToStorage(current);
   
-  // Invalidate cache since data changed
-  invalidateFirebaseCache()
-  
-  // Note: Firebase auto-save is now handled by debounced save in App.tsx
-  // This function only handles localStorage to maintain instant local saves
+  // Note: Cache invalidation removed for manual save approach
+  // Firebase save is now handled manually via Cmd+S
 };
 
 /**
@@ -155,13 +152,13 @@ export const createNewTab = (name: string, dataService?: FirebaseDataService): {
   saveTabsToStorage(newTabs);
   saveTasksToStorage(currentTasks);
   
-  // Invalidate cache since data changed
-  invalidateFirebaseCache()
+  // Note: Cache invalidation removed for manual save approach
+  // Firebase save is now handled manually via Cmd+S
   
-  // Save to Firebase if user is authenticated
+  // Save to Firebase if user is authenticated (optional, can be done manually)
   if (dataService) {
     dataService.saveTab(newTab).catch(error => {
-      console.error('Failed to sync new tab to Firebase:', error);
+      console.log('Note: New tab will be synced on next manual save');
     });
   }
   
@@ -178,12 +175,12 @@ export const renameTab = (tabId: string, newName: string, dataService?: Firebase
     currentTabs[tabId].name = newName;
     saveTabsToStorage(currentTabs);
     
-    // Save to Firebase if user is authenticated
-    if (dataService) {
-      dataService.saveTab(currentTabs[tabId]).catch(error => {
-        console.error('Failed to sync tab rename to Firebase:', error);
-      });
-    }
+  // Save to Firebase if user is authenticated (optional, can be done manually)
+  if (dataService) {
+    dataService.saveTab(currentTabs[tabId]).catch(error => {
+      console.log('Note: Tab rename will be synced on next manual save');
+    });
+  }
   }
   
   return currentTabs;

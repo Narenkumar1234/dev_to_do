@@ -11,7 +11,10 @@ import { Task, TaskMap, Tab, TabsMap } from "./types"
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext"
 import { AuthProvider, useAuth } from "./contexts/AuthContext"
 import { NotificationProvider, useNotification } from "./contexts/NotificationContext"
+import { SaveStatusProvider, useSaveStatus } from "./contexts/SaveStatusContext"
 import { FirebaseDataService } from "./lib/firebaseDataService"
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"
+import SaveStatusIndicator from "./components/SaveStatusIndicator"
 import "./styles.css"
 import {
   upsertTasksForTab,
@@ -27,6 +30,7 @@ const AppContent = () => {
   const { currentTheme } = useTheme()
   const { user } = useAuth()
   const { showSyncNotification, showSuccessNotification, showErrorNotification } = useNotification()
+  const { markUnsaved, markSaving, markSaved, markError, manualSaveTriggered, resetManualSave } = useSaveStatus()
   const today = dayjs().format("DD-MMM-YY")
 
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -36,78 +40,54 @@ const AppContent = () => {
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   const [dataService, setDataService] = useState<FirebaseDataService | null>(null)
-  const firebaseSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   const tasks = tasksByDate[selectedTabId] || []
-  const FIREBASE_SAVE_DELAY = 30000 // 30 seconds delay for Firebase saves (optimized)
 
-  // Debounced Firebase save function - only save tasks, not all tabs
-  const debouncedFirebaseSave = useCallback((tabId: string, tasksData: Task[]) => {
-    // Clear any existing timeout
-    if (firebaseSaveTimeoutRef.current) {
-      clearTimeout(firebaseSaveTimeoutRef.current)
+  // Manual save function - only saves to cloud when explicitly called
+  const manualSaveToCloud = useCallback(async () => {
+    if (!dataService || !selectedTabId) {
+      markError();
+      showErrorNotification('Cannot save: not authenticated or no workspace selected');
+      return;
     }
-    
-    // Set a new timeout for tasks only
-    firebaseSaveTimeoutRef.current = setTimeout(async () => {
-      if (dataService) {
-        try {
-          // Only save the current tab's tasks - don't re-upload all tabs
-          await dataService.saveCurrentTabTasks(tabId, tasksData);
-          console.log('Auto-saved tasks to Firebase (tasks only)');
-        } catch (error) {
-          console.error('Auto-save failed:', error);
-        }
-      }
-    }, FIREBASE_SAVE_DELAY)
-  }, [dataService])
 
-  // Clean up timeout on unmount
+    try {
+      markSaving();
+      
+      // Save both tasks and tab info in a single batch operation
+      const currentTasks = tasksByDate[selectedTabId] || [];
+      const currentTab = tabs[selectedTabId];
+      
+      if (currentTab) {
+        await dataService.manualSave(selectedTabId, currentTasks, currentTab);
+      } else {
+        // Fallback if tab doesn't exist
+        await dataService.saveCurrentTabTasks(selectedTabId, currentTasks);
+      }
+      
+      markSaved();
+      showSuccessNotification('Successfully saved to cloud!');
+      console.log('✅ Manual save completed');
+    } catch (error) {
+      markError();
+      showErrorNotification('Failed to save to cloud');
+      console.error('❌ Manual save failed:', error);
+    }
+  }, [dataService, selectedTabId, tasksByDate, tabs, markSaving, markSaved, markError, showSuccessNotification, showErrorNotification]);
+
+  // Handle manual save trigger
   useEffect(() => {
-    return () => {
-      if (firebaseSaveTimeoutRef.current) {
-        clearTimeout(firebaseSaveTimeoutRef.current)
-      }
+    if (manualSaveTriggered) {
+      manualSaveToCloud();
+      resetManualSave();
     }
-  }, [])
+  }, [manualSaveTriggered, manualSaveToCloud, resetManualSave]);
 
-  // Handle immediate Firebase save when needed (e.g., on tab switch, app close)
-  const immediateFirebaseSave = useCallback(async (tabId: string, tasksData: Task[]) => {
-    if (firebaseSaveTimeoutRef.current) {
-      clearTimeout(firebaseSaveTimeoutRef.current)
-    }
-    if (dataService) {
-      try {
-        await dataService.saveCurrentTabTasks(tabId, tasksData);
-        console.log('Immediate save to Firebase (tasks only)');
-      } catch (error) {
-        console.error('Immediate save failed:', error);
-      }
-    }
-  }, [dataService])
-
-  // Save immediately when switching tabs
-  useEffect(() => {
-    return () => {
-      if (selectedTabId && tasksByDate[selectedTabId]) {
-        immediateFirebaseSave(selectedTabId, tasksByDate[selectedTabId])
-      }
-    }
-  }, [selectedTabId, tasksByDate, immediateFirebaseSave])
-
-  // Save on page unload
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (selectedTabId && tasksByDate[selectedTabId]) {
-        immediateFirebaseSave(selectedTabId, tasksByDate[selectedTabId])
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [selectedTabId, tasksByDate, immediateFirebaseSave])
+  // Keyboard shortcut for manual save
+  useKeyboardShortcuts({
+    onSave: manualSaveToCloud,
+    enabled: !!user && !!dataService
+  });
 
   // Initialize Firebase data service when user is authenticated
   useEffect(() => {
@@ -119,7 +99,7 @@ const AppContent = () => {
     }
   }, [user]);
 
-  // Load initial data and sync with Firebase when authenticated
+  // Load initial data and sync with Firebase when authenticated (only run once)
   useEffect(() => {
     const loadData = async () => {
       // Always load local data first
@@ -171,22 +151,18 @@ const AppContent = () => {
       }
     };
 
-    loadData();
-  }, [user, dataService, today]);
-
-  // Auto-save when tasks change
-  useEffect(() => {
-    if (dataLoaded && selectedTabId && tasksByDate[selectedTabId]) {
-      debouncedFirebaseSave(selectedTabId, tasksByDate[selectedTabId])
+    // Only run on initial mount and when user/dataService first become available
+    if (!dataLoaded) {
+      loadData();
     }
-  }, [tasksByDate, selectedTabId, dataLoaded, debouncedFirebaseSave])
+  }, [user, dataService, today, dataLoaded, showSyncNotification, showSuccessNotification, showErrorNotification]);
 
   // Save the last selected tab when it changes
   useEffect(() => {
     if (selectedTabId) {
       saveLastSelectedTab(selectedTabId);
-  }
-}, [selectedTabId]);  const onDeleteTab = (tabId: string) => {
+    }
+  }, [selectedTabId]);  const onDeleteTab = (tabId: string) => {
     deleteTabFromStorage(tabId, dataService || undefined); // Restore auto-save
     setTasksByDate(prev => {
       const { [tabId]: _, ...rest } = prev;
@@ -220,8 +196,9 @@ const AppContent = () => {
     // Add new task at the beginning of the array
     const updatedTasks = [newTask, ...tasks]
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updatedTasks }))
-    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    // Save to localStorage immediately and mark as unsaved for cloud
     upsertTasksForTab(selectedTabId, updatedTasks, undefined)
+    markUnsaved()
   }
 
   const completeTask = (taskId: number) => {
@@ -230,15 +207,17 @@ const AppContent = () => {
     )
     // Keep all tasks, just toggle completed state
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
-    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    // Save to localStorage immediately and mark as unsaved for cloud
     upsertTasksForTab(selectedTabId, updated, undefined)
+    markUnsaved()
   }
 
   const deleteTask = (taskId: number) => {
     const updated = tasksByDate[selectedTabId].filter(task => task.id !== taskId)
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
-    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    // Save to localStorage immediately and mark as unsaved for cloud
     upsertTasksForTab(selectedTabId, updated, undefined)
+    markUnsaved()
   }
 
   const openNotesPanel = (taskId: number) => {
@@ -259,8 +238,9 @@ const AppContent = () => {
       return task
     })
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
-    // Save to localStorage immediately (Firebase auto-save will be triggered by useEffect)
+    // Save to localStorage immediately and mark as unsaved for cloud
     upsertTasksForTab(selectedTabId, updated, undefined)
+    markUnsaved()
   }
 
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null
@@ -272,14 +252,16 @@ const AppContent = () => {
         activeTabId={selectedTabId}
         onTabClick={setSelectedTabId}
         onRenameTab={(tabId: string, newName: string) => {
-          const updatedTabs = renameTab(tabId, newName, dataService || undefined); // Restore auto-save
+          const updatedTabs = renameTab(tabId, newName, dataService || undefined);
           setTabs(updatedTabs);
+          markUnsaved(); // Mark as unsaved when workspace is renamed
         }}
         onNewTab={(name: string) => {
-          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined); // Restore auto-save
+          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined);
           setTabs(updatedTabs);
           setTasksByDate(updatedTasks);
           setSelectedTabId(tabId); // Auto-select new tab
+          markUnsaved(); // Mark as unsaved when new workspace is created
         }}
         onDeleteTab={onDeleteTab}
       />
@@ -297,6 +279,7 @@ const AppContent = () => {
             <VizgoLogo size={90} className={currentTheme.colors.primary.text} />
           </div>
           <div className="flex items-center gap-4">
+            <SaveStatusIndicator />
             {user ? <UserProfile /> : <SignInButton />}
           </div>
         </div>
@@ -330,9 +313,11 @@ const App = () => {
     <ThemeProvider>
       <AuthProvider>
         <NotificationProvider>
-          <ProtectedRoute requireAuth={false}>
-            <AppContent />
-          </ProtectedRoute>
+          <SaveStatusProvider>
+            <ProtectedRoute requireAuth={false}>
+              <AppContent />
+            </ProtectedRoute>
+          </SaveStatusProvider>
         </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
