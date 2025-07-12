@@ -28,6 +28,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [taskTitle, setTaskTitle] = useState("")
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [currentTaskId, setCurrentTaskId] = useState<number | null>(null)
+  const [originalNotes, setOriginalNotes] = useState("") // Track original notes to detect changes
   const [editorInstance, setEditorInstance] = useState<any>(null)
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [panelWidth, setPanelWidth] = useState(() => {
@@ -56,6 +57,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
     saveTimeoutRef.current = setTimeout(() => {
       onSaveNotes(taskId, notesContent)
       setIsTyping(false)
+      // Update originalNotes after successful save to prevent duplicate saves
+      setOriginalNotes(notesContent)
     }, SAVE_DELAY)
   }, [onSaveNotes])
 
@@ -164,13 +167,17 @@ const RightPanel: React.FC<RightPanelProps> = ({
 
   useEffect(() => {
     if (selectedTask && selectedTask.id !== currentTaskId) {
-      // Save current notes before switching if we have a currentTaskId
+      // Save current notes before switching if we have a currentTaskId AND there are actual changes
       if (currentTaskId !== null) {
-        // Clear any pending debounced save and save immediately
+        // Clear any pending debounced save and save immediately only if notes actually changed
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current)
         }
-        onSaveNotes(currentTaskId, notes)
+        
+        // Only save if the current notes are different from the original notes
+        if (notes !== originalNotes) {
+          onSaveNotes(currentTaskId, notes)
+        }
       }
       
       // Set new task
@@ -182,8 +189,10 @@ const RightPanel: React.FC<RightPanelProps> = ({
         // Create new note starting with task name as H1 title
         const initialContent = `<h1>${selectedTask.text}</h1><p></p>`
         setNotes(initialContent)
+        setOriginalNotes(initialContent)
       } else {
         setNotes(selectedTask.notes)
+        setOriginalNotes(selectedTask.notes)
       }
       
       // Reset editing state when switching tasks
@@ -194,13 +203,18 @@ const RightPanel: React.FC<RightPanelProps> = ({
 
   const handleClose = () => {
     if (currentTaskId) {
-      // Clear any pending debounced save and save immediately
+      // Clear any pending debounced save and save immediately only if notes actually changed
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
-      onSaveNotes(currentTaskId, notes)
+      
+      // Only save if the current notes are different from the original notes
+      if (notes !== originalNotes) {
+        onSaveNotes(currentTaskId, notes)
+      }
     }
     setCurrentTaskId(null)
+    setOriginalNotes("")
     onClose()
     setIsEditing(false)
     setIsTyping(false)
