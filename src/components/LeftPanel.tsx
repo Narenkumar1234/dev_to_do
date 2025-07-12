@@ -120,7 +120,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             <input
               type="text"
               placeholder="Search workspaces..."
-              className={`w-full pl-10 pr-4 py-2.5 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all duration-200`}
+              className={`w-full pl-3 pr-4 py-2.5 border ${currentTheme.colors.border.light} rounded-xl ${currentTheme.colors.background.card} backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all duration-200`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
