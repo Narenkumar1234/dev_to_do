@@ -276,7 +276,7 @@ const AppContent = () => {
           }}
         >
           <div className="flex items-center gap-3">
-            <VizgoLogo size={90} className={currentTheme.colors.primary.text} />
+            <VizgoLogo size={40} className={currentTheme.colors.primary.text} />
           </div>
           <div className="flex items-center gap-4">
             <SaveStatusIndicator />

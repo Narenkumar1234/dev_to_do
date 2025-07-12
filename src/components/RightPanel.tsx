@@ -34,7 +34,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [panelWidth, setPanelWidth] = useState(() => {
     // Load saved width from localStorage or use default
     const saved = localStorage.getItem('rightPanelWidth')
-    return saved ? parseInt(saved, 10) : 640
+    const savedWidth = saved ? parseInt(saved, 10) : 640
+    return Math.max(savedWidth, 450)
   })
   const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -42,7 +43,7 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Constants for resize constraints
-  const MIN_WIDTH = 320 // Minimum width in pixels
+  const MIN_WIDTH = 450 // Minimum width in pixels
   const MAX_WIDTH = 800 // Maximum width in pixels
   const SAVE_DELAY = 1000 // Delay in milliseconds before saving (1 second)
 
