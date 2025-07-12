@@ -12,6 +12,7 @@ interface RightPanelProps {
   onSaveNotes: (taskId: number, notes: string) => void
   visible: boolean
   onWidthChange?: (width: number) => void
+  isMobile?: boolean
 }
 
 const RightPanel: React.FC<RightPanelProps> = ({ 
@@ -19,7 +20,8 @@ const RightPanel: React.FC<RightPanelProps> = ({
   onClose, 
   onSaveNotes, 
   visible,
-  onWidthChange 
+  onWidthChange,
+  isMobile = false
 }) => {
   const { currentTheme } = useTheme()
   const [notes, setNotes] = useState("")
@@ -259,6 +261,71 @@ const RightPanel: React.FC<RightPanelProps> = ({
     return null
   }
 
+  // Mobile layout - full screen
+  if (isMobile) {
+    return (
+      <div className={`h-full ${currentTheme.colors.background.panel} flex flex-col`}>
+        {/* Mobile Header */}
+        <div className={`flex-shrink-0 ${currentTheme.colors.background.card} border-b ${currentTheme.colors.border.light} z-10`}>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onClose}
+                className={`p-2 rounded-lg ${currentTheme.colors.background.hover} ${currentTheme.colors.text.muted} hover:${currentTheme.colors.primary.text} transition-colors duration-200`}
+                title="Close notes"
+              >
+                <X size={20} />
+              </button>
+              <div className="flex items-center gap-2">
+                <FileText size={20} className={currentTheme.colors.primary.text} />
+                <span className={`font-semibold ${currentTheme.colors.text.primary} text-lg`}>Task Notes</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isTyping && (
+                <div className="flex items-center gap-2 text-sm text-amber-600">
+                  <div className="w-2 h-2 bg-amber-600 rounded-full animate-pulse" />
+                  <span>Saving...</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Task Info */}
+        <div className={`flex-shrink-0 px-4 py-3 ${currentTheme.colors.background.card} border-b ${currentTheme.colors.border.light}`}>
+          <h3 className={`font-medium ${currentTheme.colors.text.primary} mb-2 text-sm`}>
+            {taskTitle || "Untitled Task"}
+          </h3>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <Calendar size={12} />
+              <span>Today</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock size={12} />
+              <span>{getCurrentTime()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Editor */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 p-4">
+            <SimpleEditor
+              content={notes}
+              onChange={handleNotesChange}
+              onEditorReady={setEditorInstance}
+              placeholder="Add your notes here..."
+              autoFocus={false}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Desktop layout
   return (
     <div
       ref={panelRef}

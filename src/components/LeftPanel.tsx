@@ -92,7 +92,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   };
 
   return (
-    <div className={`w-64 md:w-80 lg:w-1/5 flex-shrink-0 ${currentTheme.colors.background.panel} ${currentTheme.colors.border.light} border-r h-full flex flex-col min-w-0`}>
+    <div className={`w-64 lg:w-72 xl:w-80 flex-shrink-0 ${currentTheme.colors.background.panel} ${currentTheme.colors.border.light} border-r h-full flex flex-col min-w-0`}>
       {/* Header */}
       <div className={`p-4 md:p-6 pb-4 border-b ${currentTheme.colors.border.light}`}>
         <div className="flex items-center gap-3 mb-4">

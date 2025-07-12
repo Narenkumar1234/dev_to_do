@@ -76,19 +76,24 @@ const SaveStatusIndicator: React.FC = () => {
 
   return (
     <div 
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${config.bgColor} ${config.color} transition-all duration-200 ${
+      className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg ${config.bgColor} ${config.color} transition-all duration-200 ${
         config.clickable ? 'cursor-pointer hover:opacity-80' : ''
       }`}
       onClick={handleClick}
       title={config.clickable ? `Click or press ${shortcut} to save` : undefined}
     >
       {config.icon}
-      <span className="text-xs font-medium">{config.text}</span>
+      <span className="text-xs font-medium hidden sm:inline">{config.text}</span>
+      <span className="text-xs font-medium sm:hidden">
+        {status === 'saving' ? 'Saving...' : 
+         status === 'error' ? 'Error' :
+         hasUnsavedChanges ? 'Unsaved' : 'Synced'}
+      </span>
       {(status === 'unsaved' || hasUnsavedChanges) && (
-        <span className="text-xs opacity-75">({shortcut})</span>
+        <span className="text-xs opacity-75 hidden md:inline">({shortcut})</span>
       )}
       {lastSaved && status === 'saved' && !hasUnsavedChanges && (
-        <span className="text-xs opacity-75">
+        <span className="text-xs opacity-75 hidden lg:inline">
           {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       )}

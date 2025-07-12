@@ -8,6 +8,80 @@
 html, body {
   @apply bg-gray-100 text-gray-800 h-screen m-0 p-0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Responsive utility classes */
+.min-w-0 {
+  min-width: 0;
+}
+
+/* Touch-friendly spacing on mobile */
+@media (max-width: 767px) {
+  .touch-friendly {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Increase padding for mobile */
+  .mobile-padding {
+    padding: 0.75rem;
+  }
+  
+  /* Larger text on mobile for readability */
+  .mobile-text {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Mobile specific improvements */
+  .mobile-task-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+
+  /* Always show mobile controls on touch devices */
+  .mobile-controls {
+    opacity: 1 !important;
+  }
+
+  /* Larger tap targets */
+  input, button, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Compact mobile layout */
+  .mobile-compact {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+}
+
+/* Tablet specific adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-two-col {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Custom scrollbar styles */

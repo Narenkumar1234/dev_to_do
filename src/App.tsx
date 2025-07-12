@@ -246,44 +246,92 @@ const AppContent = () => {
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null
 
   return (
-    <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main} min-w-0`} style={{ minWidth: '768px' }}>
-      <LeftPanel
-        tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
-        activeTabId={selectedTabId}
-        onTabClick={setSelectedTabId}
-        onRenameTab={(tabId: string, newName: string) => {
-          const updatedTabs = renameTab(tabId, newName, dataService || undefined);
-          setTabs(updatedTabs);
-          markUnsaved(); // Mark as unsaved when workspace is renamed
-        }}
-        onNewTab={(name: string) => {
-          const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined);
-          setTabs(updatedTabs);
-          setTasksByDate(updatedTasks);
-          setSelectedTabId(tabId); // Auto-select new tab
-          markUnsaved(); // Mark as unsaved when new workspace is created
-        }}
-        onDeleteTab={onDeleteTab}
-      />
-
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header with User Profile or Sign In */}
+    <div className={`flex h-screen overflow-hidden ${currentTheme.colors.background.main} min-w-0 w-full`}>
+      {/* Mobile Header - Only visible on small screens */}
+      <div className="md:hidden w-full fixed top-0 left-0 right-0 z-40">
         <div 
-          className="flex items-center justify-between p-4 z-auto border-b"
+          className="flex items-center justify-between p-3 sm:p-4 border-b"
           style={{ 
             backgroundColor: currentTheme.colors.background.panel,
             borderColor: currentTheme.colors.border.light
           }}
         >
-          <div className="flex items-center gap-3">
-            <VizgoLogo size={40} className={currentTheme.colors.primary.text} />
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <VizgoLogo size={24} className={`${currentTheme.colors.primary.text} flex-shrink-0`} />
+            <span className={`text-sm sm:text-base font-bold ${currentTheme.colors.text.primary} truncate`}>
+              {tabs[selectedTabId]?.name || "Tasks"}
+            </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <SaveStatusIndicator />
             {user ? <UserProfile /> : <SignInButton />}
           </div>
         </div>
+      </div>
 
+      {/* Desktop Layout - Three panel layout for medium+ screens */}
+      <div className="hidden md:flex w-full">
+        <LeftPanel
+          tabs={Object.values(tabs)} // Convert TabsMap to Tab[]
+          activeTabId={selectedTabId}
+          onTabClick={setSelectedTabId}
+          onRenameTab={(tabId: string, newName: string) => {
+            const updatedTabs = renameTab(tabId, newName, dataService || undefined);
+            setTabs(updatedTabs);
+            markUnsaved(); // Mark as unsaved when workspace is renamed
+          }}
+          onNewTab={(name: string) => {
+            const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined);
+            setTabs(updatedTabs);
+            setTasksByDate(updatedTasks);
+            setSelectedTabId(tabId); // Auto-select new tab
+            markUnsaved(); // Mark as unsaved when new workspace is created
+          }}
+          onDeleteTab={onDeleteTab}
+        />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Desktop Header */}
+          <div 
+            className="flex items-center justify-between p-4 border-b"
+            style={{ 
+              backgroundColor: currentTheme.colors.background.panel,
+              borderColor: currentTheme.colors.border.light
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <VizgoLogo size={40} className={currentTheme.colors.primary.text} />
+            </div>
+            <div className="flex items-center gap-4">
+              <SaveStatusIndicator />
+              {user ? <UserProfile /> : <SignInButton />}
+            </div>
+          </div>
+
+          <MiddlePanel
+            tasks={tasks}
+            addTask={addTask}
+            onEditNotes={openNotesPanel}
+            onCompleteTask={completeTask}
+            onDeleteTask={deleteTask}
+            workspaceName={tabs[selectedTabId]?.name || "Tasks"}
+            selectedTaskId={selectedTaskId}
+          />
+        </div>
+
+        {showNotesPanel && (
+          <RightPanel
+            selectedTask={selectedTask}
+            onClose={closeNotesPanel}
+            onSaveNotes={saveNotes}
+            visible={showNotesPanel}
+            onWidthChange={() => {}} // No longer needed for layout
+          />
+        )}
+      </div>
+
+      {/* Mobile Layout - Single panel view */}
+      <div className="md:hidden flex-1 flex flex-col w-full h-full pt-16">
         <MiddlePanel
           tasks={tasks}
           addTask={addTask}
@@ -292,18 +340,39 @@ const AppContent = () => {
           onDeleteTask={deleteTask}
           workspaceName={tabs[selectedTabId]?.name || "Tasks"}
           selectedTaskId={selectedTaskId}
+          isMobile={true}
+          tabs={Object.values(tabs)}
+          activeTabId={selectedTabId}
+          onTabClick={setSelectedTabId}
+          onRenameTab={(tabId: string, newName: string) => {
+            const updatedTabs = renameTab(tabId, newName, dataService || undefined);
+            setTabs(updatedTabs);
+            markUnsaved();
+          }}
+          onNewTab={(name: string) => {
+            const { tabId, tabs: updatedTabs, tasks: updatedTasks } = createNewTab(name, dataService || undefined);
+            setTabs(updatedTabs);
+            setTasksByDate(updatedTasks);
+            setSelectedTabId(tabId);
+            markUnsaved();
+          }}
+          onDeleteTab={onDeleteTab}
         />
-      </div>
 
-      {showNotesPanel && (
-        <RightPanel
-          selectedTask={selectedTask}
-          onClose={closeNotesPanel}
-          onSaveNotes={saveNotes}
-          visible={showNotesPanel}
-          onWidthChange={() => {}} // No longer needed for layout
-        />
-      )}
+        {/* Mobile Notes Panel - Full screen overlay */}
+        {showNotesPanel && (
+          <div className="fixed inset-0 z-50 bg-white">
+            <RightPanel
+              selectedTask={selectedTask}
+              onClose={closeNotesPanel}
+              onSaveNotes={saveNotes}
+              visible={showNotesPanel}
+              onWidthChange={() => {}}
+              isMobile={true}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
