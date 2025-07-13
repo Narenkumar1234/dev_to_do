@@ -26,6 +26,6 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 // Initialize Firebase Analytics
-export const analytics = getAnalytics(app);
+// export const analytics = getAnalytics(app);
 
 export default app;

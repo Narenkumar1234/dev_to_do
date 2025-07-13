@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "DevTab - Tasks & Notes",
+  "name": "New tab - Tasks & Notes",
   "description": "A beautiful, responsive new tab extension for developers to manage tasks, take notes, and track workspaces with real-time sync.",
   "version": "1.0.0",
   "permissions": [
