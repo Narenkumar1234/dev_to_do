@@ -12,6 +12,7 @@ interface MiddlePanelProps {
   onDeleteTask: (taskId: number) => void
   workspaceName: string
   selectedTaskId: number | null
+  workspaceCreatedAt?: string
   // Mobile-specific props
   isMobile?: boolean
   tabs?: Tab[]
@@ -30,6 +31,7 @@ const MiddlePanel = ({
   onDeleteTask,
   workspaceName,
   selectedTaskId,
+  workspaceCreatedAt,
   isMobile = false,
   tabs = [],
   activeTabId = "",
@@ -86,7 +88,14 @@ const MiddlePanel = ({
     })
   }
 
-  const getCurrentDate = () => {
+  const getWorkspaceDate = () => {
+    if (workspaceCreatedAt) {
+      return new Date(workspaceCreatedAt).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      })
+    }
     return new Date().toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -94,11 +103,29 @@ const MiddlePanel = ({
     })
   }
 
-  const getCurrentTime = () => {
+  const getWorkspaceTime = () => {
+    if (workspaceCreatedAt) {
+      return new Date(workspaceCreatedAt).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
     return new Date().toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const getTaskLastModified = (task: Task) => {
+    if (task.lastModified) {
+      return new Date(task.lastModified).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+    return null
   }
 
   const completedTasks = tasks.filter(task => task.completed)
@@ -205,12 +232,12 @@ const MiddlePanel = ({
                 <div className="flex items-center gap-1">
                   <Calendar size={10} className="md:hidden" />
                   <Calendar size={12} className="hidden md:block" />
-                  <span className="truncate">{getCurrentDate()}</span>
+                  <span className="truncate">{getWorkspaceDate()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={10} className="md:hidden" />
                   <Clock size={12} className="hidden md:block" />
-                  <span>{getCurrentTime()}</span>
+                  <span>{getWorkspaceTime()}</span>
                 </div>
               </div>
             </div>
@@ -322,6 +349,14 @@ const MiddlePanel = ({
                         <span className={`${currentTheme.colors.secondary.text} group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 truncate`}>
                           {task.notes ? 'Click to view/edit notes' : 'Click to add notes'}
                         </span>
+                        {isSelected && getTaskLastModified(task) && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-xs text-gray-500">
+                              Last edited: {getTaskLastModified(task)}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     
@@ -389,6 +424,14 @@ const MiddlePanel = ({
                         <span className={`${currentTheme.colors.secondary.text} group-hover:${currentTheme.colors.secondary.text} transition-colors duration-200 truncate`}>
                           {task.notes ? 'Click to view/edit notes' : 'Click to add notes'}
                         </span>
+                        {isSelected && getTaskLastModified(task) && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-xs text-gray-500">
+                              Last edited: {getTaskLastModified(task)}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     

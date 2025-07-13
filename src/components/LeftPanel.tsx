@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Plus, Edit2, Trash2, FolderOpen, Calendar } from "lucide-react";
+import { Search, Plus, Edit2, Trash2, FolderOpen, Calendar, Clock } from "lucide-react";
 import { Tab } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import ThemeSwitcher from "./ThemeSwitcher";
@@ -30,6 +30,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   const [editingTabName, setEditingTabName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [tabToDelete, setTabToDelete] = useState<Tab | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +46,15 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       editInputRef.current.select();
     }
   }, [editingTabId]);
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const filteredTabs = tabs.filter((tab) =>
     tab.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -110,6 +120,27 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             <p className={`text-xs md:text-sm ${currentTheme.colors.text.muted} truncate`}>
               {tabs.length} workspace{tabs.length !== 1 ? 's' : ''}
             </p>
+          </div>
+        </div>
+
+        {/* Digital Clock - Better positioned */}
+        <div className={`mb-4 text-center ${currentTheme.colors.background.card} rounded-xl p-3 border ${currentTheme.colors.border.light} shadow-sm`}>
+          <div className={`font-mono text-xl font-bold tracking-wider mb-1 bg-gradient-to-r ${currentTheme.colors.primary.from} ${currentTheme.colors.primary.to} bg-clip-text text-transparent`} style={{
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+          }}>
+            {currentTime.toLocaleTimeString('en-US', {
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            })}
+          </div>
+          <div className={`text-xs ${currentTheme.colors.text.muted} font-medium tracking-wide`}>
+            {currentTime.toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric'
+            })}
           </div>
         </div>
         

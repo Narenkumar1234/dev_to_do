@@ -187,11 +187,14 @@ const AppContent = () => {
   };
 
   const addTask = (text: string) => {
+    const now = new Date().toISOString();
     const newTask: Task = {
       id: Date.now(),
       text,
       notes: "",
       completed: false,
+      createdAt: now,
+      lastModified: now,
     }
     // Add new task at the beginning of the array
     const updatedTasks = [newTask, ...tasks]
@@ -202,8 +205,9 @@ const AppContent = () => {
   }
 
   const completeTask = (taskId: number) => {
+    const now = new Date().toISOString();
     const updated = tasksByDate[selectedTabId].map(task =>
-      task.id === taskId ? { ...task, completed: !task.completed } : task
+      task.id === taskId ? { ...task, completed: !task.completed, lastModified: now } : task
     )
     // Keep all tasks, just toggle completed state
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
@@ -231,9 +235,10 @@ const AppContent = () => {
   }
 
   const saveNotes = (taskId: number, notes: string) => {
+    const now = new Date().toISOString();
     const updated = tasksByDate[selectedTabId].map(task => {
       if (task.id === taskId) {
-        return { ...task, notes }
+        return { ...task, notes, lastModified: now }
       }
       return task
     })
@@ -316,6 +321,7 @@ const AppContent = () => {
             onDeleteTask={deleteTask}
             workspaceName={tabs[selectedTabId]?.name || "Tasks"}
             selectedTaskId={selectedTaskId}
+            workspaceCreatedAt={tabs[selectedTabId]?.createdAt}
           />
         </div>
 
@@ -340,6 +346,7 @@ const AppContent = () => {
           onDeleteTask={deleteTask}
           workspaceName={tabs[selectedTabId]?.name || "Tasks"}
           selectedTaskId={selectedTaskId}
+          workspaceCreatedAt={tabs[selectedTabId]?.createdAt}
           isMobile={true}
           tabs={Object.values(tabs)}
           activeTabId={selectedTabId}

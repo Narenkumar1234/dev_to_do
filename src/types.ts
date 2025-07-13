@@ -3,12 +3,15 @@ export interface Task {
   text: string
   notes: string
   completed: boolean
+  createdAt?: string
+  lastModified?: string
 }
 
 export interface Tab {
   id: string
   name: string
   createdAt?: string
+  lastModified?: string
 }
 
 export interface TaskMap {
