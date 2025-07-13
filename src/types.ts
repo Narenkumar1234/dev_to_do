@@ -21,3 +21,23 @@ export interface TaskMap {
 export interface TabsMap {
   [tabId: string]: Tab
 }
+
+export interface UserQuota {
+  tasksCount: number
+  workspacesCount: number
+  maxTasks: number
+  maxWorkspaces: number
+  readsToday: number
+  writesToday: number
+  maxReadsPerDay: number
+  maxWritesPerDay: number
+  lastResetDate: string
+}
+
+export interface QuotaStatus {
+  canCreateTask: boolean
+  canCreateWorkspace: boolean
+  canRead: boolean
+  canWrite: boolean
+  warningMessage?: string
+}

@@ -7,6 +7,7 @@ import UserProfile from "./components/UserProfile"
 import SignInButton from "./components/SignInButton"
 import ProtectedRoute from "./components/ProtectedRoute"
 import VizgoLogo from "./components/VizgoLogo"
+import QuotaWarning from "./components/QuotaWarning"
 import { Task, TaskMap, Tab, TabsMap } from "./types"
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext"
 import { AuthProvider, useAuth } from "./contexts/AuthContext"
@@ -14,6 +15,7 @@ import { NotificationProvider, useNotification } from "./contexts/NotificationCo
 import { SaveStatusProvider, useSaveStatus } from "./contexts/SaveStatusContext"
 import { FirebaseDataService } from "./lib/firebaseDataService"
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"
+import { useQuotaManager } from "./hooks/useQuotaManager"
 import SaveStatusIndicator from "./components/SaveStatusIndicator"
 import "./styles.css"
 import {
@@ -40,8 +42,12 @@ const AppContent = () => {
   const [showNotesPanel, setShowNotesPanel] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   const [dataService, setDataService] = useState<FirebaseDataService | null>(null)
+  const [showQuotaWarning, setShowQuotaWarning] = useState(false)
   
   const tasks = tasksByDate[selectedTabId] || []
+  
+  // Initialize quota manager
+  const { quota, quotaStatus, incrementReads, incrementWrites, getQuotaWarning } = useQuotaManager(tasksByDate, tabs);
 
   // Manual save function - only saves to cloud when explicitly called
   const manualSaveToCloud = useCallback(async () => {
@@ -82,6 +88,13 @@ const AppContent = () => {
       resetManualSave();
     }
   }, [manualSaveTriggered, manualSaveToCloud, resetManualSave]);
+
+  // Show quota warning when needed
+  useEffect(() => {
+    if (quotaStatus.warningMessage && user) {
+      setShowQuotaWarning(true);
+    }
+  }, [quotaStatus.warningMessage, user]);
 
   // Keyboard shortcut for manual save
   useKeyboardShortcuts({
@@ -187,6 +200,21 @@ const AppContent = () => {
   };
 
   const addTask = (text: string) => {
+    // Check quota before creating task
+    const quotaError = getQuotaWarning('task');
+    if (quotaError) {
+      showErrorNotification(quotaError);
+      return;
+    }
+
+    if (!quotaStatus.canWrite) {
+      const writeError = getQuotaWarning('write');
+      if (writeError) {
+        showErrorNotification(writeError);
+        return;
+      }
+    }
+
     const now = new Date().toISOString();
     const newTask: Task = {
       id: Date.now(),
@@ -201,6 +229,7 @@ const AppContent = () => {
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updatedTasks }))
     // Save to localStorage immediately and mark as unsaved for cloud
     upsertTasksForTab(selectedTabId, updatedTasks, undefined)
+    incrementWrites()
     markUnsaved()
   }
 
@@ -312,6 +341,17 @@ const AppContent = () => {
               {user ? <UserProfile /> : <SignInButton />}
             </div>
           </div>
+
+          {/* Quota Warning */}
+          {quota && quotaStatus.warningMessage && showQuotaWarning && (
+            <div className="p-4">
+              <QuotaWarning
+                quota={quota}
+                warningMessage={quotaStatus.warningMessage}
+                onClose={() => setShowQuotaWarning(false)}
+              />
+            </div>
+          )}
 
           <MiddlePanel
             tasks={tasks}
