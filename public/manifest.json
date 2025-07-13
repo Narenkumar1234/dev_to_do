@@ -1,16 +1,28 @@
 {
   "manifest_version": 3,
-  "name": "Dev Tasks & Notes",
-  "description": "Take meeting notes and track daily dev tasks from new tab.",
-  "version": "1.0",
-  "permissions": [],
+  "name": "DevTab - Tasks & Notes",
+  "description": "A beautiful, responsive new tab extension for developers to manage tasks, take notes, and track workspaces with real-time sync.",
+  "version": "1.0.0",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://*.firebaseapp.com/*",
+    "https://*.googleapis.com/*"
+  ],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
   "action": {
-    "default_title": "Dev Tasks & Notes"
+    "default_title": "DevTab - Tasks & Notes"
   },
   "icons": {
-    "128": "icon.png"
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://*.firebaseio.com;"
   }
 }

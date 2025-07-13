@@ -1,10 +1,12 @@
 {
-    "name": "dev-tab-extension",
+    "name": "devtab-extension",
     "version": "1.0.0",
-    "description": "Custom Chrome new tab for daily dev tasks and meeting notes",
+    "description": "A beautiful new tab extension for developers to manage tasks, notes, and workspaces",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "build:extension": "npm run build && npm run package",
+        "package": "cd dist && zip -r ../devtab-extension-v1.0.0.zip . && cd ..",
         "preview": "vite preview",
         "lint": "eslint . --ext .ts,.tsx --fix",
         "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
@@ -12,8 +14,8 @@
         "clean": "rm -rf node_modules dist package-lock.json && echo 'Project cleaned. Run npm install again.'",
         "start": "npm run dev"
     },
-    "keywords": [],
-    "author": "",
+    "keywords": ["chrome-extension", "new-tab", "productivity", "tasks", "notes", "developer", "workspace"],
+    "author": "Your Name",
     "license": "MIT",
     "dependencies": {
         "@tailwindcss/postcss": "^4.1.6",
