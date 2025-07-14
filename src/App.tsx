@@ -272,9 +272,12 @@ const AppContent = () => {
       return task
     })
     setTasksByDate(prev => ({ ...prev, [selectedTabId]: updated }))
-    // Save to localStorage immediately and mark as unsaved for cloud
+    
+    // Save to localStorage immediately (this is the "local save")
     upsertTasksForTab(selectedTabId, updated, undefined)
-    markUnsaved()
+    
+    // Mark as locally saved, indicating cloud sync might be needed later
+    markSaved()
   }
 
   const selectedTask = selectedTaskId ? tasks.find(t => t.id === selectedTaskId) || null : null

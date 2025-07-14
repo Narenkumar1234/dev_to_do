@@ -42,37 +42,10 @@ const RightPanel: React.FC<RightPanelProps> = ({
   const [isResizing, setIsResizing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const resizeHandleRef = useRef<HTMLDivElement>(null)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Constants for resize constraints
   const MIN_WIDTH = 450 // Minimum width in pixels
   const MAX_WIDTH = 800 // Maximum width in pixels
-  const SAVE_DELAY = 1000 // Delay in milliseconds before saving (1 second)
-
-  // Debounced save function
-  const debouncedSave = useCallback((taskId: number, notesContent: string) => {
-    // Clear any existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-    
-    // Set a new timeout
-    saveTimeoutRef.current = setTimeout(() => {
-      onSaveNotes(taskId, notesContent)
-      setIsTyping(false)
-      // Update originalNotes after successful save to prevent duplicate saves
-      setOriginalNotes(notesContent)
-    }, SAVE_DELAY)
-  }, [onSaveNotes])
-
-  // Clean up timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
 
   // Handle resize functionality
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -172,11 +145,6 @@ const RightPanel: React.FC<RightPanelProps> = ({
     if (selectedTask && selectedTask.id !== currentTaskId) {
       // Save current notes before switching if we have a currentTaskId AND there are actual changes
       if (currentTaskId !== null) {
-        // Clear any pending debounced save and save immediately only if notes actually changed
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current)
-        }
-        
         // Only save if the current notes are different from the original notes
         if (notes !== originalNotes) {
           onSaveNotes(currentTaskId, notes)
@@ -206,11 +174,6 @@ const RightPanel: React.FC<RightPanelProps> = ({
 
   const handleClose = () => {
     if (currentTaskId) {
-      // Clear any pending debounced save and save immediately only if notes actually changed
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-      
       // Only save if the current notes are different from the original notes
       if (notes !== originalNotes) {
         onSaveNotes(currentTaskId, notes)
@@ -227,9 +190,13 @@ const RightPanel: React.FC<RightPanelProps> = ({
     setNotes(newNotes)
     setIsTyping(true)
     
-    // Only auto-save if we have a valid currentTaskId and it matches the selected task
+    // Save immediately to localStorage via parent component
     if (currentTaskId && selectedTask && currentTaskId === selectedTask.id) {
-      debouncedSave(currentTaskId, newNotes)
+      onSaveNotes(currentTaskId, newNotes)
+      // Update originalNotes to reflect the save
+      setOriginalNotes(newNotes)
+      // Reset typing state since we saved
+      setTimeout(() => setIsTyping(false), 500)
     }
   }
 
