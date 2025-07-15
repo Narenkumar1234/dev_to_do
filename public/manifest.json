@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "New Tab",
+  "name": "Notes Tab - VizGo",
   "version": "1.0.0",
   "description": "A beautiful and productive new tab experience with task management, notes, and live clock",
   "chrome_url_overrides": {
