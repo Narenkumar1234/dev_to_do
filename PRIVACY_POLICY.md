@@ -1,6 +1,6 @@
 # Privacy Policy for DevTab Extension
 
-**Last updated: July 13, 2025**
+**Last updated: July 16, 2025**
 
 ## Information We Collect
 
@@ -25,7 +25,7 @@ Your data is used solely to:
 - No sensitive information is stored in plain text
 - You can delete your data at any time
 
-## Your Rights
+## Rights
 
 You have the right to:
 - Access your stored data
@@ -36,7 +36,7 @@ You have the right to:
 ## Contact Us
 
 If you have questions about this Privacy Policy, contact us at:
-[your-email@example.com]
+[narenkumar2001@gmail.com]
 
 ## Changes to This Policy
 
