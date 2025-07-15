@@ -132,7 +132,7 @@ const MiddlePanel = ({
   const pendingTasks = tasks.filter(task => !task.completed)
 
   return (
-    <div className={`flex-1 ${currentTheme.colors.background.main} ${currentTheme.colors.border.light} ${!isMobile ? 'border-r' : ''} h-full flex flex-col min-w-0 w-full`}>
+    <div className={`flex-1 ${currentTheme.colors.background.main} ${currentTheme.colors.border.light} ${!isMobile ? 'border-r' : ''} h-full flex flex-col min-w-0 min-h-0 w-full`}>
       
       {/* Mobile Workspace Selector */}
       {isMobile && (
@@ -299,7 +299,7 @@ const MiddlePanel = ({
       </div>
 
       {/* Tasks List */}
-      <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 md:p-6 pb-20 space-y-3 md:space-y-4"> {/* Added min-h-0 for proper flex behavior */}
         {pendingTasks.length > 0 && (
           <div>
             <h3 className={`text-sm font-semibold ${currentTheme.colors.text.secondary} mb-2 md:mb-3 flex items-center gap-2`}>
