@@ -128,7 +128,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/your-username/devtab-extension/issues)
-- **Email**: your-email@example.com
+- **Email**: narenkumar2001@gmail.com
 - **Documentation**: See `PUBLISHING_GUIDE.md` for detailed setup
 
 ## 🌟 Roadmap
