@@ -1,6 +1,6 @@
 # 🚀 DevTab - Tasks & Notes Chrome Extension
 
-A beautiful, responsive new tab extension for developers to manage tasks, take notes, and track workspaces with real-time sync.
+A beautiful, responsive new tab extension for developers to manage tasks, take notes, and track workspaces with local storage.
 
 ![DevTab Preview](https://via.placeholder.com/800x400/10b981/ffffff?text=DevTab+Extension+Preview)
 
@@ -10,12 +10,11 @@ A beautiful, responsive new tab extension for developers to manage tasks, take n
 - **📝 Task Management** - Create, organize, and track your daily tasks
 - **🗂️ Multiple Workspaces** - Organize projects into separate workspaces
 - **📖 Rich Notes** - Take detailed notes with a powerful editor
-- **🔄 Real-time Sync** - Your data syncs across all devices with Firebase
+- **💾 Local Storage** - All your data is saved locally in your browser
 - **📱 Responsive Design** - Perfect on desktop, tablet, and mobile
 - **🎨 Theme Support** - Light and dark themes for comfortable viewing
-- **⌨️ Keyboard Shortcuts** - Save with Cmd+S/Ctrl+S
-- **📊 Quota Management** - Smart usage tracking for Firebase free tier
-- **🔒 Privacy Focused** - Your data is encrypted and secure
+- **🔒 Privacy First** - No data collection, everything stays on your device
+- **⚡ Fast & Offline** - Works completely offline with instant performance
 
 ## 🎯 Perfect for
 
@@ -61,7 +60,7 @@ This creates a `devtab-extension-v1.0.0.zip` file ready for Chrome Web Store sub
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Firebase (Firestore, Authentication)
+- **Storage**: Browser LocalStorage
 - **Build Tool**: Vite
 - **Editor**: Tiptap (ProseMirror-based)
 - **Icons**: Lucide React
@@ -82,9 +81,9 @@ devtab-extension/
 │   └── icons/            # Extension icons
 ├── src/
 │   ├── components/       # React components
-│   ├── contexts/         # React contexts (Auth, Theme, etc.)
+│   ├── contexts/         # React contexts (Theme, Notifications)
 │   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Firebase and utilities
+│   ├── utils.ts         # Local storage utilities
 │   └── types.ts         # TypeScript definitions
 ├── store-assets/        # Chrome Web Store assets
 └── dist/               # Built extension (gitignored)
@@ -109,9 +108,10 @@ devtab-extension/
 ## 🔒 Privacy & Security
 
 - **No tracking**: We don't collect analytics or personal data
-- **Local-first**: Works offline, data stored locally
-- **Encrypted sync**: Firebase provides enterprise-grade security
+- **Local-only**: All data stays on your device, never sent to external servers
+- **No network requests**: Extension works completely offline
 - **Open source**: Transparent and auditable code
+- **No permissions**: Only requires local storage access
 
 ## 📄 License
 
@@ -133,12 +133,12 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🌟 Roadmap
 
-- [ ] Offline mode improvements
-- [ ] Task scheduling and reminders
-- [ ] Export/import functionality
-- [ ] Team collaboration features
+- [ ] Data export/import functionality
+- [ ] Task scheduling and reminders  
 - [ ] Advanced theming options
 - [ ] Widget customization
+- [ ] Backup and restore features
+- [ ] Keyboard shortcuts customization
 
 ---
 

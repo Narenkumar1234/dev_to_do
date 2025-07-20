@@ -1,37 +1,39 @@
 # Privacy Policy for DevTab Extension
 
-**Last updated: July 16, 2025**
+**Last updated: July 20, 2025**
 
 ## Information We Collect
 
-DevTab is designed with privacy in mind. The extension:
+DevTab is designed with privacy as the top priority. The extension:
 
-- **Local Storage**: Stores your tasks and notes locally in your browser
-- **Firebase Sync**: When you sign in, your data is encrypted and stored in Firebase for sync across devices
-- **No Tracking**: We do not collect analytics, browsing data, or personal information
-- **No Third-party Sharing**: Your data is never shared with third parties
+- **Local Storage Only**: All your tasks and notes are stored locally in your browser
+- **No Data Collection**: We do not collect, transmit, or store any personal information
+- **No Network Requests**: The extension works completely offline and makes no external connections
+- **No Tracking**: We do not collect analytics, browsing data, or any personal information
+- **No Third-party Services**: Your data never leaves your device
 
 ## How We Use Your Information
 
 Your data is used solely to:
-- Provide the task and note management functionality
-- Sync your data across your devices when signed in
-- Maintain your preferences and settings
+- Provide the task and note management functionality locally on your device
+- Maintain your preferences and settings in local storage
+- Display your workspaces and tasks in the extension interface
 
 ## Data Security
 
-- All data is encrypted in transit and at rest
-- Firebase provides enterprise-grade security
-- No sensitive information is stored in plain text
-- You can delete your data at any time
+- All data remains on your local device
+- No data transmission over the internet
+- No external servers or databases involved
+- Your data is as secure as your device and browser
+- You have complete control over your data
 
-## Rights
+## Your Rights
 
-You have the right to:
-- Access your stored data
-- Delete your account and all associated data
-- Use the extension offline without creating an account
-- Export your data
+You have complete control over your data:
+- Access your stored data through the extension interface
+- Clear all data by removing the extension or clearing browser data
+- Use the extension without any account creation or sign-up
+- Your data belongs to you and stays on your device
 
 ## Contact Us
 
@@ -40,4 +42,4 @@ If you have questions about this Privacy Policy, contact us at:
 
 ## Changes to This Policy
 
-We may update this Privacy Policy from time to time. We will notify users of any material changes.
+We may update this Privacy Policy from time to time. Any changes will be reflected in the updated date above. Since the extension works locally and doesn't collect data, policy changes will primarily relate to clarifications rather than changes in data handling practices.

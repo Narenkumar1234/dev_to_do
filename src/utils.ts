@@ -92,7 +92,11 @@ export const initializeApp = (today: string): { tasks: TaskMap; tabs: TabsMap; d
   if (tabIds.length === 0) {
     // No tabs exist, create today's tab as the default
     const defaultTabId = generateTabId();
-    currentTabs[defaultTabId] = { id: defaultTabId, name: today };
+    currentTabs[defaultTabId] = { 
+      id: defaultTabId, 
+      name: today,
+      createdAt: new Date().toISOString()
+    };
     currentTasks[defaultTabId] = [];
     
     saveTasksToStorage(currentTasks);
@@ -120,9 +124,15 @@ export const createNewTab = (name: string): { tabId: string; tabs: TabsMap; task
   const currentTabs = getTabsFromStorage();
   const currentTasks = getTasksFromStorage();
   
+  const newTab = { 
+    id: tabId, 
+    name,
+    createdAt: new Date().toISOString()
+  };
+  
   // Create new tabs object with the new tab first
   const newTabs: TabsMap = {
-    [tabId]: { id: tabId, name },
+    [tabId]: newTab,
     ...currentTabs
   };
   
