@@ -113,9 +113,6 @@ devtab-extension/
 - **Open source**: Transparent and auditable code
 - **No permissions**: Only requires local storage access
 
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
